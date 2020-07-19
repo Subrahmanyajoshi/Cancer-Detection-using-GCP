@@ -9,3 +9,6 @@
 .vscode/
 .DS_Store
 Thumbs.db
+
+# python environments
+.python3/
