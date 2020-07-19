@@ -1,0 +1,11 @@
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Cache folders for pytests
+.pytest_cache/
+
+# Editors, OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
