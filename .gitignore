@@ -12,3 +12,9 @@ Thumbs.db
 
 # python environments
 .python3/
+
+# images
+*.png
+*.jpg
+*.jpeg
+*.dcm
