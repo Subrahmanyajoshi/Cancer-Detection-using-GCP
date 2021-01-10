@@ -79,3 +79,10 @@ def train_and_evaluate(args):
         copy_file_to_gcs(job_dir, CLASSIFICATION_MODEL)
     else:
         Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
+
+
+# Running the app
+if __name__ == "__main__":
+    args = get_args()
+    arguments = args.__dict__
+    train_and_evaluate(args)
