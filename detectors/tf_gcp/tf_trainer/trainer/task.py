@@ -23,15 +23,21 @@ def get_args():
         help='GCS or local path to training data',
     )
     parser.add_argument(
+        '--bucket',
+        help='GCS path to data. We assume that data is in gs://BUCKET/babyweight/preproc/',
+        required=True
+    )
+    parser.add_argument(
+        '--output_dir',
+        help='GCS location to write checkpoints and export models',
+        required=True
+    )
+    parser.add_argument(
         '--job-dir',
         type=str,
         help='GCS location to write checkpoints and export models'
     )
-    parser.add_argument(
-        '--train-dir',
-        help='GCS or local path to training data',
-        required=True
-    )
+
     args, _ = parser.parse_known_args()
     return args
 
@@ -40,7 +46,7 @@ def train_and_evaluate(args):
     Model = model.keras_estimator()
     Model.summary()
 
-    DATA_PATH = args.train_dir
+    DATA_PATH = os.path.join(args.bucket, 'test_cnn_data')
     train_dir = os.path.join(DATA_PATH, 'train')
     val_dir = os.path.join(DATA_PATH, 'val')
 
@@ -63,22 +69,28 @@ def train_and_evaluate(args):
         batch_size=10,
         class_mode='binary')
 
+    cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5',
+                                                       monitor='val_loss',
+                                                       save_freq='epoch',
+                                                       save_best_only=False)
+    tensorboard = tf.keras.callbacks.TensorBoard(log_dir='tensorboard')
+
     epochs = 10
     history = Model.fit(
         train_generator,
         validation_data=validation_generator,
-        epochs=epochs
+        epochs=epochs,
+        callbacks=[cp_checkpoint, tensorboard]
     )
 
-    Model.save('cl_model.hdf5')
+    Model.save(os.path.join(args.output_dir, 'cl_model.hdf5'))
+#     job_dir = args.job_dir + '/export'
 
-    job_dir = args.job_dir + '/export'
-
-    if job_dir.startswith("gs://"):
-        Model.save(CLASSIFICATION_MODEL)
-        copy_file_to_gcs(job_dir, CLASSIFICATION_MODEL)
-    else:
-        Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
+#     if job_dir.startswith("gs://"):
+#         Model.save(CLASSIFICATION_MODEL)
+#         copy_file_to_gcs(job_dir, CLASSIFICATION_MODEL)
+#     else:
+#         Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
 
 
 # Running the app
