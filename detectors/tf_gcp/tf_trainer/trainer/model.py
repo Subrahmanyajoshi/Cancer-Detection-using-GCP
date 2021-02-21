@@ -20,7 +20,6 @@ def keras_estimator(imag_shape=(None, 300, 300, 3)):
         layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
-        layers.Dropout(0.5),
         layers.Dense(1, activation='sigmoid')
     ])
 

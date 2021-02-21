@@ -5,8 +5,8 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-from data_generator import MyCustomGenerator
-import model
+from trainer.data_generator import MyCustomGenerator
+from trainer import model
 
 CLASSIFICATION_MODEL = 'cl_model.hdf5'
 
@@ -37,7 +37,7 @@ def get_args():
         default=512
     )
     parser.add_argument(
-        '--output_dir',
+        '--output-dir',
         help='GCS location to write checkpoints and export models',
         required=False
     )
@@ -61,10 +61,10 @@ def get_args():
 def train_and_evaluate(args_):
     Model = model.keras_estimator()
     Model.summary()
-
-    X_train_filenames = np.load(os.path.join(args_.input_dir, 'train', 'x_train_filenames.npy'))
+    
+    X_train_filenames = np.load(os.path.join(args_.input_dir, 'train', 'X_train_filenames.npy'))
     y_train = np.load(os.path.join(args_.input_dir, 'train', 'y_train.npy'))
-    X_val_filenames = np.load(os.path.join(args_.input_dir, 'val', 'x_val_filenames.npy'))
+    X_val_filenames = np.load(os.path.join(args_.input_dir, 'val', 'X_val_filenames.npy'))
     y_val = np.load(os.path.join(args_.input_dir, 'val', 'y_val.npy'))
     train_dir = args_.input_dir
 
@@ -125,5 +125,6 @@ def train_and_evaluate(args_):
 # Running the app
 if __name__ == "__main__":
     args = get_args()
+    print("hey hey hey")
     arguments = args.__dict__
     train_and_evaluate(args)
