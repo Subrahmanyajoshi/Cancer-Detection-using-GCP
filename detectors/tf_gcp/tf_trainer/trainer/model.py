@@ -10,14 +10,14 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
 def keras_estimator(imag_shape=(None, 300, 300, 3)):
     model = Sequential([
-        layers.Conv2D(filters=32, kernel_size=((3, 3)), padding='same', activation='relu'),
-        layers.MaxPooling2D(pool_size=(2,2)),
-        layers.Conv2D(filters=64, kernel_size=((3, 3)), padding='same', activation='relu'),
-        layers.MaxPooling2D(pool_size=(2,2)),
-        layers.Conv2D(filters=128, kernel_size=((3, 3)), padding='same', activation='relu'),
-        layers.MaxPooling2D(pool_size=(2,2)),
-        layers.Conv2D(filters=256, kernel_size=((3, 3)), padding='same', activation='relu'),
-        layers.MaxPooling2D(pool_size=(2,2)),
+        layers.Conv2D(filters=32, kernel_size=(3, 3), padding='same', activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=64, kernel_size=(3, 3), padding='same', activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=128, kernel_size=(3, 3), padding='same', activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
         layers.Dropout(0.5),
@@ -31,6 +31,7 @@ def keras_estimator(imag_shape=(None, 300, 300, 3)):
     # return tf.keras.estimator.model_to_estimator(keras_model=model, model_dir=model_dir,
     #                                              config=config)
     return model
+
 
 """
 def input_fn(train_dir, val_dir, batch_size, mode):

@@ -2,9 +2,11 @@ import argparse
 import os
 from tensorflow.python.lib.io import file_io
 import tensorflow as tf
+import numpy as np
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-from . import model
+from data_generator import MyCustomGenerator
+import model
 
 CLASSIFICATION_MODEL = 'cl_model.hdf5'
 
@@ -21,35 +23,52 @@ def get_args():
     parser.add_argument(
         '--package-path',
         help='GCS or local path to training data',
+        required=False
     )
     parser.add_argument(
         '--bucket',
         help='GCS path to data. We assume that data is in gs://BUCKET/babyweight/preproc/',
-        required=True
+        required=False
+    )
+    parser.add_argument(
+        '--batch_size',
+        help='Number of examples to compute gradient over.',
+        type=int,
+        default=512
     )
     parser.add_argument(
         '--output_dir',
         help='GCS location to write checkpoints and export models',
-        required=True
+        required=False
     )
     parser.add_argument(
         '--job-dir',
         type=str,
-        help='GCS location to write checkpoints and export models'
+        help='GCS location to write checkpoints and export models',
+        required=False
+    )
+    parser.add_argument(
+        '--input-dir',
+        type=str,
+        help='path to train directory',
+        required=True
     )
 
-    args, _ = parser.parse_known_args()
-    return args
+    args_, _ = parser.parse_known_args()
+    return args_
 
 
-def train_and_evaluate(args):
+def train_and_evaluate(args_):
     Model = model.keras_estimator()
     Model.summary()
 
-    DATA_PATH = os.path.join(args.bucket, 'test_cnn_data')
-    train_dir = os.path.join(DATA_PATH, 'train')
-    val_dir = os.path.join(DATA_PATH, 'val')
+    X_train_filenames = np.load(os.path.join(args_.input_dir, 'train', 'x_train_filenames.npy'))
+    y_train = np.load(os.path.join(args_.input_dir, 'train', 'y_train.npy'))
+    X_val_filenames = np.load(os.path.join(args_.input_dir, 'val', 'x_val_filenames.npy'))
+    y_val = np.load(os.path.join(args_.input_dir, 'val', 'y_val.npy'))
+    train_dir = args_.input_dir
 
+    """
     train_datagen = ImageDataGenerator(
         rescale=1. / 255,
         shear_range=0.2,
@@ -68,8 +87,16 @@ def train_and_evaluate(args):
         target_size=(300, 300),
         batch_size=10,
         class_mode='binary')
+    """
 
-    cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5',
+    train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, os.path.join(train_dir,
+                                                                                                   'all_images/'))
+    validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, os.path.join(train_dir,
+                                                                                                    'all_images/'))
+
+    cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(args.output_dir, 'checkpoints/model.{'
+                                                                                              'epoch:02d}-{'
+                                                                                              'val_loss:.2f}.hdf5'),
                                                        monitor='val_loss',
                                                        save_freq='epoch',
                                                        save_best_only=False)
@@ -84,6 +111,8 @@ def train_and_evaluate(args):
     )
 
     Model.save(os.path.join(args.output_dir, 'cl_model.hdf5'))
+
+
 #     job_dir = args.job_dir + '/export'
 
 #     if job_dir.startswith("gs://"):
