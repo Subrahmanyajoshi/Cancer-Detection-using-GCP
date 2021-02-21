@@ -3,10 +3,10 @@
 
 # Cache folders for pytests
 .pytest_cache/
-.__pycache__
+__pycache__
 
 # Tensorboard directories
-.tensorboard
+tensorboard
 
 
 # Editors, OS
