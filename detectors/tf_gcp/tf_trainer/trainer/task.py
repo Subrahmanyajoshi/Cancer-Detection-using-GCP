@@ -8,6 +8,9 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from trainer.data_generator import MyCustomGenerator
 from trainer import model
 
+from io import StringIO, BytesIO
+from tensorflow.python.lib.io import file_io
+
 CLASSIFICATION_MODEL = 'cl_model.hdf5'
 
 
@@ -57,15 +60,19 @@ def get_args():
     args_, _ = parser.parse_known_args()
     return args_
 
+def load_npy_from_gcs(file_path):
+    _file = BytesIO(file_io.read_file_to_string('gs://vernal-buffer-285906/test_cnn/filenames.npy', binary_mode=True))
+    np_data = np.load(_file)
+    return np_data
 
 def train_and_evaluate(args_):
     Model = model.keras_estimator()
     Model.summary()
     
-    X_train_filenames = np.load(os.path.join(args_.input_dir, 'train', 'X_train_filenames.npy'))
-    y_train = np.load(os.path.join(args_.input_dir, 'train', 'y_train.npy'))
-    X_val_filenames = np.load(os.path.join(args_.input_dir, 'val', 'X_val_filenames.npy'))
-    y_val = np.load(os.path.join(args_.input_dir, 'val', 'y_val.npy'))
+    X_train_filenames = load_npy_from_gcs(os.path.join(args_.input_dir, 'train', 'X_train_filenames.npy'))
+    y_train = load_npy_from_gcs(os.path.join(args_.input_dir, 'train', 'y_train.npy'))
+    X_val_filenames = load_npy_from_gcs(os.path.join(args_.input_dir, 'val', 'X_val_filenames.npy'))
+    y_val = load_npy_from_gcs(os.path.join(args_.input_dir, 'val', 'y_val.npy'))
     train_dir = args_.input_dir
 
     """
