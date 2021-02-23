@@ -96,10 +96,10 @@ def train_and_evaluate(args_):
         class_mode='binary')
     """
 
-    train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, os.path.join(train_dir,
-                                                                                                   'all_images/'))
-    validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, os.path.join(train_dir,
-                                                                                                    'all_images/'))
+    train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, 
+                                        os.path.join(train_dir, 'all_images/'), args_.bucket)
+    validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, 
+                                             os.path.join(train_dir, 'all_images/'), args_.bucket)
 
     cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(args.output_dir, 'checkpoints/model.{'
                                                                                               'epoch:02d}-{'
