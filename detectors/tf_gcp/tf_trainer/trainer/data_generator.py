@@ -39,7 +39,7 @@ class MyCustomGenerator(keras.utils.Sequence):
             
 #         raise ValueError()
 #         print(f'index: {idx}, batch size: {self.batch_size}, batch_x: {batch_x}')
-        
+
         images = np.array([resize(img, (300, 300))for img in images]) / 255.0
         labels = np.array(batch_y)
         return images, labels

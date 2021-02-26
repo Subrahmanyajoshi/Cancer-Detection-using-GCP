@@ -16,7 +16,7 @@ CLASSIFICATION_MODEL = 'cl_model.hdf5'
 
 def copy_file_to_gcs(job_dir, file_path):
     with file_io.FileIO(file_path, mode='r') as input_f:
-        with file_io.FileIO(os.path.join(job_dir, file_path), mode='w+') as output_f:
+        with file_io.FileIO(os.path.join(job_dir, file_path), mode='wb+') as output_f:
             output_f.write(input_f.read())
 
 
@@ -61,7 +61,7 @@ def get_args():
     return args_
 
 def load_npy_from_gcs(file_path):
-    _file = BytesIO(file_io.read_file_to_string('gs://vernal-buffer-285906/test_cnn/filenames.npy', binary_mode=True))
+    _file = BytesIO(file_io.read_file_to_string(file_path, binary_mode=True))
     np_data = np.load(_file)
     return np_data
 
@@ -69,10 +69,10 @@ def train_and_evaluate(args_):
     Model = model.keras_estimator()
     Model.summary()
     
-    X_train_filenames = load_npy_from_gcs(os.path.join(args_.input_dir, 'train', 'X_train_filenames.npy'))
-    y_train = load_npy_from_gcs(os.path.join(args_.input_dir, 'train', 'y_train.npy'))
-    X_val_filenames = load_npy_from_gcs(os.path.join(args_.input_dir, 'val', 'X_val_filenames.npy'))
-    y_val = load_npy_from_gcs(os.path.join(args_.input_dir, 'val', 'y_val.npy'))
+    X_train_filenames = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'train', 'X_train_filenames.npy'))
+    y_train = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'train', 'y_train.npy'))
+    X_val_filenames = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'val', 'X_val_filenames.npy'))
+    y_val = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'val', 'y_val.npy'))
     train_dir = args_.input_dir
 
     """
@@ -117,21 +117,15 @@ def train_and_evaluate(args_):
         callbacks=[cp_checkpoint, tensorboard]
     )
 
-    Model.save(os.path.join(args.output_dir, 'cl_model.hdf5'))
-
-
-#     job_dir = args.job_dir + '/export'
-
-#     if job_dir.startswith("gs://"):
-#         Model.save(CLASSIFICATION_MODEL)
-#         copy_file_to_gcs(job_dir, CLASSIFICATION_MODEL)
-#     else:
-#         Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
+    if args.output_dir.startswith("gs://"):
+        Model.save(CLASSIFICATION_MODEL)
+        copy_file_to_gcs(args.output_dir, CLASSIFICATION_MODEL)
+    else:
+        Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
 
 
 # Running the app
 if __name__ == "__main__":
     args = get_args()
-    print("hey hey hey")
     arguments = args.__dict__
     train_and_evaluate(args)
