@@ -15,7 +15,7 @@ CLASSIFICATION_MODEL = 'cl_model.hdf5'
 
 
 def copy_file_to_gcs(job_dir, file_path):
-    with file_io.FileIO(file_path, mode='r') as input_f:
+    with file_io.FileIO(file_path, mode='rb') as input_f:
         with file_io.FileIO(os.path.join(job_dir, file_path), mode='wb+') as output_f:
             output_f.write(input_f.read())
 
