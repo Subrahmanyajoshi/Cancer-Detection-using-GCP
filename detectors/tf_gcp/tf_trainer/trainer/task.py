@@ -1,5 +1,9 @@
 import argparse
 import os
+import glob
+import shutil
+from google.cloud import storage
+
 from tensorflow.python.lib.io import file_io
 import tensorflow as tf
 import numpy as np
@@ -19,6 +23,19 @@ def copy_file_to_gcs(job_dir, file_path):
         with file_io.FileIO(os.path.join(job_dir, file_path), mode='wb+') as output_f:
             output_f.write(input_f.read())
 
+
+def copy_directory_to_gcs(local_path, bucket, gcs_path):
+    """Recursively copy a directory of files to GCS.
+
+    local_path should be a directory and not have a trailing slash.
+    """
+    assert os.path.isdir(local_path)
+    for local_file in glob.glob(local_path + '/**'):
+        if not os.path.isfile(local_file):
+            continue
+        remote_path = os.path.join(gcs_path, local_file)
+        blob = bucket.blob(remote_path)
+        blob.upload_from_filename(local_file)
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -56,6 +73,12 @@ def get_args():
         help='path to train directory',
         required=True
     )
+    parser.add_argument(
+        '--num-epochs',
+        type=int,
+        help='number of epochs',
+        required=True
+    )
 
     args_, _ = parser.parse_known_args()
     return args_
@@ -68,6 +91,9 @@ def load_npy_from_gcs(file_path):
 def train_and_evaluate(args_):
     Model = model.keras_estimator()
     Model.summary()
+    
+    client = storage.Client()
+    bucket = client.get_bucket(args_.bucket)
     
     X_train_filenames = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'train', 'X_train_filenames.npy'))
     y_train = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'train', 'y_train.npy'))
@@ -97,29 +123,33 @@ def train_and_evaluate(args_):
     """
 
     train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, 
-                                        os.path.join(train_dir, 'all_images/'), args_.bucket)
+                                        os.path.join(train_dir, 'all_images/'), bucket)
     validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, 
-                                             os.path.join(train_dir, 'all_images/'), args_.bucket)
+                                             os.path.join(train_dir, 'all_images/'), bucket)
 
-    cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(args.output_dir, 'checkpoints/model.{'
-                                                                                              'epoch:02d}-{'
-                                                                                              'val_loss:.2f}.hdf5'),
+    if os.path.exists('checkpoints'):
+        shutil.rmtree('checkpoints')
+    os.mkdir('checkpoints')
+    
+    cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='./checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5',
                                                        monitor='val_loss',
                                                        save_freq='epoch',
                                                        save_best_only=False)
-    tensorboard = tf.keras.callbacks.TensorBoard(log_dir='tensorboard')
+    tensorboard = tf.keras.callbacks.TensorBoard(log_dir=os.path.join(args.output_dir, 'tensorboard'))
 
-    epochs = 10
+    epochs = args_.num_epochs
     history = Model.fit(
         train_generator,
         validation_data=validation_generator,
         epochs=epochs,
         callbacks=[cp_checkpoint, tensorboard]
     )
+    
 
     if args.output_dir.startswith("gs://"):
         Model.save(CLASSIFICATION_MODEL)
         copy_file_to_gcs(args.output_dir, CLASSIFICATION_MODEL)
+        copy_directory_to_gcs('./checkpoints', bucket, os.path.join(args.output_dir, 'checkpoints'))
     else:
         Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
 

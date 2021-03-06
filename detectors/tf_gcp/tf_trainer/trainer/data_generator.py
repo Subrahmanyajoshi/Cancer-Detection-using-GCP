@@ -14,8 +14,7 @@ class MyCustomGenerator(keras.utils.Sequence):
         self.batch_size = batch_size
         self.dest_dir = dest_dir
         
-        client = storage.Client()
-        self.bucket = client.get_bucket(bucket)
+        self.bucket = bucket
 
     def __len__(self):
         return (np.ceil(len(self.image_filenames) / float(self.batch_size))).astype(np.int)
