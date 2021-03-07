@@ -30,12 +30,13 @@ def copy_directory_to_gcs(local_path, bucket, gcs_path):
     local_path should be a directory and not have a trailing slash.
     """
     assert os.path.isdir(local_path)
-    for local_file in glob.glob(local_path + '/**'):
-        if not os.path.isfile(local_file):
+    for local_file in os.listdir(local_path):
+        l_file = os.path.join(local_path, local_file)
+        if not os.path.isfile(l_file):
             continue
         remote_path = os.path.join(gcs_path, local_file)
         blob = bucket.blob(remote_path)
-        blob.upload_from_filename(local_file)
+        blob.upload_from_filename(l_file)
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -149,7 +150,8 @@ def train_and_evaluate(args_):
     if args.output_dir.startswith("gs://"):
         Model.save(CLASSIFICATION_MODEL)
         copy_file_to_gcs(args.output_dir, CLASSIFICATION_MODEL)
-        copy_directory_to_gcs('./checkpoints', bucket, os.path.join(args.output_dir, 'checkpoints'))
+        copy_directory_to_gcs('./checkpoints', bucket, 
+                              os.path.join(args.output_dir.split(f"{args_.bucket}/")[1], 'checkpoints'))
     else:
         Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
 
