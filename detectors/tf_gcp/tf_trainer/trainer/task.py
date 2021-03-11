@@ -4,6 +4,7 @@ import glob
 import shutil
 from google.cloud import storage
 
+import zipfile
 from tensorflow.python.lib.io import file_io
 import tensorflow as tf
 import numpy as np
@@ -80,6 +81,14 @@ def get_args():
         help='number of epochs',
         required=True
     )
+    
+    parser.add_argument(
+        '--steps-per-epoch',
+        type=int,
+        help='number of steps per epoch',
+        required=False,
+        default=2
+    )
 
     args_, _ = parser.parse_known_args()
     return args_
@@ -122,11 +131,20 @@ def train_and_evaluate(args_):
         batch_size=10,
         class_mode='binary')
     """
-
+    os.system(f"gsutil cp -r gs://{args_.bucket}/{os.path.join(train_dir, 'all_images.zip')} ./")
+    
+    with zipfile.ZipFile('all_images.zip', 'r') as zip_ref:
+        zip_ref.extractall('./')
+    
+#     train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, 
+#                                         os.path.join(train_dir, 'all_images/'), bucket)
+#     validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, 
+#                                              os.path.join(train_dir, 'all_images/'), bucket)
+    
     train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, 
-                                        os.path.join(train_dir, 'all_images/'), bucket)
+                                        './all_images/', bucket)
     validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, 
-                                             os.path.join(train_dir, 'all_images/'), bucket)
+                                             './all_images/', bucket)
 
     if os.path.exists('checkpoints'):
         shutil.rmtree('checkpoints')
@@ -143,9 +161,14 @@ def train_and_evaluate(args_):
         train_generator,
         validation_data=validation_generator,
         epochs=epochs,
-        callbacks=[cp_checkpoint, tensorboard]
+        callbacks=[cp_checkpoint, tensorboard],
+        steps_per_epoch=args_.steps_per_epoch
     )
     
+    if os.path.exists('all_images'):
+        shutil.rmtree('all_images')
+    if os.path.exists('all_images.zip'):
+        os.remove('all_images.zip')
 
     if args.output_dir.startswith("gs://"):
         Model.save(CLASSIFICATION_MODEL)

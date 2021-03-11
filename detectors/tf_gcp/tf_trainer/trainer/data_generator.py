@@ -22,12 +22,10 @@ class MyCustomGenerator(keras.utils.Sequence):
     def __getitem__(self, idx):
         batch_x = self.image_filenames[idx * self.batch_size: (idx + 1) * self.batch_size]
         batch_y = self.labels[idx * self.batch_size: (idx + 1) * self.batch_size]
-
-#         print(self.dest_dir)
-#         print(os.path.join(self.dest_dir + str(batch_x[0])))
-#         images = [imread(os.path.join(self.dest_dir + str(file_name))) for file_name in batch_x]
-#         print(images)
         
+        images = [imread(os.path.join(self.dest_dir + str(file_name))) for file_name in batch_x]
+        
+        """
         images = []
         for file_name in batch_x:
             image_path = os.path.join(self.dest_dir + str(file_name))
@@ -35,9 +33,7 @@ class MyCustomGenerator(keras.utils.Sequence):
             image_blob.download_to_filename(file_name)
             images.append(imread(file_name))
             os.remove(file_name)
-            
-#         raise ValueError()
-#         print(f'index: {idx}, batch size: {self.batch_size}, batch_x: {batch_x}')
+        """
 
         images = np.array([resize(img, (300, 300))for img in images]) / 255.0
         labels = np.array(batch_y)

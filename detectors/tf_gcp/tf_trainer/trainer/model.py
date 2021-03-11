@@ -18,6 +18,8 @@ def keras_estimator(imag_shape=(None, 300, 300, 3)):
         layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu'),
         layers.MaxPooling2D(pool_size=(2, 2)),
+        layers.Conv2D(filters=512, kernel_size=(3, 3), padding='same', activation='relu'),
+        layers.MaxPooling2D(pool_size=(2, 2)),
         layers.Flatten(),
         layers.Dense(128, activation='relu'),
         layers.Dense(1, activation='sigmoid')
