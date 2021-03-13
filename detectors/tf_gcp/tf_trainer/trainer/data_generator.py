@@ -24,7 +24,9 @@ class MyCustomGenerator(keras.utils.Sequence):
         batch_y = self.labels[idx * self.batch_size: (idx + 1) * self.batch_size]
         
         images = [imread(os.path.join(self.dest_dir + str(file_name))) for file_name in batch_x]
-        
+
+        # the following code downloads images one by one from google storage every time this generator
+        # is called. it works but is a bit slow.
         """
         images = []
         for file_name in batch_x:

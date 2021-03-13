@@ -39,76 +39,50 @@ def copy_directory_to_gcs(local_path, bucket, gcs_path):
         blob = bucket.blob(remote_path)
         blob.upload_from_filename(l_file)
 
+
 def get_args():
     parser = argparse.ArgumentParser()
     # Input Arguments
-    parser.add_argument(
-        '--package-path',
-        help='GCS or local path to training data',
-        required=False
-    )
-    parser.add_argument(
-        '--bucket',
-        help='GCS path to data. We assume that data is in gs://BUCKET/babyweight/preproc/',
-        required=False
-    )
-    parser.add_argument(
-        '--batch_size',
-        help='Number of examples to compute gradient over.',
-        type=int,
-        default=512
-    )
-    parser.add_argument(
-        '--output-dir',
-        help='GCS location to write checkpoints and export models',
-        required=False
-    )
-    parser.add_argument(
-        '--job-dir',
-        type=str,
-        help='GCS location to write checkpoints and export models',
-        required=False
-    )
-    parser.add_argument(
-        '--input-dir',
-        type=str,
-        help='path to train directory',
-        required=True
-    )
-    parser.add_argument(
-        '--num-epochs',
-        type=int,
-        help='number of epochs',
-        required=True
-    )
-    
-    parser.add_argument(
-        '--steps-per-epoch',
-        type=int,
-        help='number of steps per epoch',
-        required=False,
-        default=2
-    )
+    parser.add_argument('--package-path', help='GCS or local path to training data',
+                        required=False)
+    parser.add_argument('--bucket', help='Name of the GCS bucket in which data is stored',
+                        required=False)
+    parser.add_argument('--batch_size', help='Number of examples to compute gradient over.', type=int,
+                        default=32, required=False)
+    parser.add_argument('--output-dir', help='GCS location to write checkpoints and export models',
+                        required=False)
+    parser.add_argument('--job-dir', type=str, help='GCS location to write checkpoints and export models',
+                        required=False)
+    parser.add_argument('--input-dir', type=str, help='path to train data directory',
+                        required=True)
+    parser.add_argument('--num-epochs', type=int, help='number of epochs',
+                        required=True)
+    parser.add_argument('--steps-per-epoch', type=int, help='number of steps per epoch', default=2,
+                        required=False)
 
     args_, _ = parser.parse_known_args()
     return args_
+
 
 def load_npy_from_gcs(file_path):
     _file = BytesIO(file_io.read_file_to_string(file_path, binary_mode=True))
     np_data = np.load(_file)
     return np_data
 
+
 def train_and_evaluate(args_):
     Model = model.keras_estimator()
     Model.summary()
-    
+
     client = storage.Client()
     bucket = client.get_bucket(args_.bucket)
-    
-    X_train_filenames = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'train', 'X_train_filenames.npy'))
-    y_train = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'train', 'y_train.npy'))
-    X_val_filenames = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'val', 'X_val_filenames.npy'))
-    y_val = load_npy_from_gcs(os.path.join(('gs://'+args_.bucket), args_.input_dir, 'val', 'y_val.npy'))
+
+    X_train_filenames = load_npy_from_gcs(
+        os.path.join(('gs://' + args_.bucket), args_.input_dir, 'train', 'X_train_filenames.npy'))
+    y_train = load_npy_from_gcs(os.path.join(('gs://' + args_.bucket), args_.input_dir, 'train', 'y_train.npy'))
+    X_val_filenames = load_npy_from_gcs(
+        os.path.join(('gs://' + args_.bucket), args_.input_dir, 'val', 'X_val_filenames.npy'))
+    y_val = load_npy_from_gcs(os.path.join(('gs://' + args_.bucket), args_.input_dir, 'val', 'y_val.npy'))
     train_dir = args_.input_dir
 
     """
@@ -132,24 +106,24 @@ def train_and_evaluate(args_):
         class_mode='binary')
     """
     os.system(f"gsutil cp -r gs://{args_.bucket}/{os.path.join(train_dir, 'all_images.zip')} ./")
-    
+
     with zipfile.ZipFile('all_images.zip', 'r') as zip_ref:
         zip_ref.extractall('./')
-    
-#     train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, 
-#                                         os.path.join(train_dir, 'all_images/'), bucket)
-#     validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, 
-#                                              os.path.join(train_dir, 'all_images/'), bucket)
-    
-    train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size, 
+
+    #     train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size,
+    #                                         os.path.join(train_dir, 'all_images/'), bucket)
+    #     validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size,
+    #                                              os.path.join(train_dir, 'all_images/'), bucket)
+
+    train_generator = MyCustomGenerator(X_train_filenames, y_train, args_.batch_size,
                                         './all_images/', bucket)
-    validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size, 
+    validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size,
                                              './all_images/', bucket)
 
     if os.path.exists('checkpoints'):
         shutil.rmtree('checkpoints')
     os.mkdir('checkpoints')
-    
+
     cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='./checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5',
                                                        monitor='val_loss',
                                                        save_freq='epoch',
@@ -164,7 +138,7 @@ def train_and_evaluate(args_):
         callbacks=[cp_checkpoint, tensorboard],
         steps_per_epoch=args_.steps_per_epoch
     )
-    
+
     if os.path.exists('all_images'):
         shutil.rmtree('all_images')
     if os.path.exists('all_images.zip'):
@@ -173,10 +147,10 @@ def train_and_evaluate(args_):
     if args.output_dir.startswith("gs://"):
         Model.save(CLASSIFICATION_MODEL)
         copy_file_to_gcs(args.output_dir, CLASSIFICATION_MODEL)
-        copy_directory_to_gcs('./checkpoints', bucket, 
+        copy_directory_to_gcs('./checkpoints', bucket,
                               os.path.join(args.output_dir.split(f"{args_.bucket}/")[1], 'checkpoints'))
     else:
-        Model.save(os.path.join(job_dir, CLASSIFICATION_MODEL))
+        Model.save(os.path.join(args.output_dir, CLASSIFICATION_MODEL))
 
 
 # Running the app
