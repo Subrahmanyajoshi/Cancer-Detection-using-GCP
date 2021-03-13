@@ -1,5 +1,5 @@
 import tensorflow as tf
-from keras import optimizers
+from tensorflow.keras import optimizers
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 
@@ -26,7 +26,7 @@ def keras_estimator(imag_shape=(None, 300, 300, 3)):
     ])
 
     model.build(input_shape=imag_shape)
-    model.compile(optimizer=optimizers.adam(lr=1e-4),
+    model.compile(optimizer=optimizers.Adam(learning_rate=1e-4),
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
     return model

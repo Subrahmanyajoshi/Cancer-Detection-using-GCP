@@ -119,7 +119,7 @@ def train_and_evaluate(args_):
                                         './all_images/', bucket)
     validation_generator = MyCustomGenerator(X_val_filenames, y_val, args_.batch_size,
                                              './all_images/', bucket)
-
+    
     if os.path.exists('checkpoints'):
         shutil.rmtree('checkpoints')
     os.mkdir('checkpoints')
@@ -139,18 +139,22 @@ def train_and_evaluate(args_):
         steps_per_epoch=args_.steps_per_epoch
     )
 
-    if os.path.exists('all_images'):
-        shutil.rmtree('all_images')
-    if os.path.exists('all_images.zip'):
-        os.remove('all_images.zip')
 
     if args.output_dir.startswith("gs://"):
         Model.save(CLASSIFICATION_MODEL)
         copy_file_to_gcs(args.output_dir, CLASSIFICATION_MODEL)
-        copy_directory_to_gcs('./checkpoints', bucket,
+        copy_directory_to_gcs('checkpoints', bucket,
                               os.path.join(args.output_dir.split(f"{args_.bucket}/")[1], 'checkpoints'))
     else:
         Model.save(os.path.join(args.output_dir, CLASSIFICATION_MODEL))
+        
+    # Cleaning
+    os.remove(CLASSIFICATION_MODEL)
+    if os.path.exists('all_images'):
+        shutil.rmtree('all_images')
+    if os.path.exists('all_images.zip'):
+        os.remove('all_images.zip')
+    shutil.rmtree('checkpoints')
 
 
 # Running the app
