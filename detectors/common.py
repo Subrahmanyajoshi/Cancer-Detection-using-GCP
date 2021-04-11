@@ -44,7 +44,7 @@ class BucketOps(object):
     @staticmethod
     def get_bucket(bucket_name: str):
         client = storage.Client()
-        bucket = client.get_bucket(bucket_name=bucket_name)
+        bucket = client.get_bucket(bucket_name)
         return bucket
 
     @staticmethod

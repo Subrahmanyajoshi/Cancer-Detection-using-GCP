@@ -7,8 +7,7 @@ from io import BytesIO
 from google.cloud.storage import Bucket
 from tensorflow.python.lib.io import file_io
 
-from detectors.common import SystemOps
-from detectors.tf_gcp.trainer.task import BucketOps
+from detectors.common import SystemOps, BucketOps
 
 
 class IO(abc.ABC):
@@ -82,8 +81,10 @@ class CloudIO(IO):
     def write(self, src_path: str, dest_path: str):
         if self.bucket is None:
             raise ValueError('Please provide the bucket object to copy file to GCS')
-        if not dest_path.startswith('gs://'):
-            dest_path = BucketOps.get_gcs_path(bucket_name=self.bucket.name, path=dest_path)
+        if dest_path.startswith('gs://'):
+            dest_path = dest_path.split(f"{self.bucket.name}/")[1]
+        
+        dest_path = os.path.join(dest_path, os.path.basename(src_path))
         if os.path.isfile(src_path):
             self.upload_file_to_gcs(src_path=src_path, dest_path=dest_path)
         else:

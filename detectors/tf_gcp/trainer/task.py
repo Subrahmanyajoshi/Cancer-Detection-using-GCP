@@ -28,6 +28,7 @@ class Trainer(object):
         Model.summary()
 
         bucket = BucketOps.get_bucket(self.args.bucket)
+        
         if self.args.input_dir.startswith('gs://'):
             io_operator = CloudIO(input_dir=self.args.input_dir, bucket=bucket)
             os.system(f"gsutil cp -r {os.path.join(self.args.input_dir, 'all_images.zip')} ./")
