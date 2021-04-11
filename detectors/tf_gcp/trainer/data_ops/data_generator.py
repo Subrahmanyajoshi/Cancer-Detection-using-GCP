@@ -1,19 +1,17 @@
 import os
-from google.cloud import storage
 
 import numpy as np
 from cv2 import imread, resize
 from tensorflow import keras
 
 
-class MyCustomGenerator(keras.utils.Sequence):
+class DataGenerator(keras.utils.Sequence):
 
     def __init__(self, image_filenames, labels, batch_size, dest_dir, bucket):
         self.image_filenames = image_filenames
         self.labels = labels
         self.batch_size = batch_size
         self.dest_dir = dest_dir
-        
         self.bucket = bucket
 
     def __len__(self):
