@@ -3,6 +3,8 @@ import os
 
 import numpy as np
 from io import BytesIO
+
+from google.cloud.storage import Bucket
 from tensorflow.python.lib.io import file_io
 
 from detectors.common import SystemOps
@@ -15,7 +17,7 @@ class IO(abc.ABC):
     X_VAL = 'X_val_filenames.npy'
     Y_VAL = 'y_val.npy'
 
-    def __init__(self, input_dir: str, bucket=None):
+    def __init__(self, input_dir: str, bucket: Bucket = None):
         self.X_train_filenames = os.path.join(input_dir, 'train', IO.X_TRAIN)
         self.y_train = os.path.join(input_dir, 'train', IO.Y_TRAIN)
         self.X_val_filenames = os.path.join(input_dir, 'val', IO.X_VAL)
@@ -49,7 +51,7 @@ class LocalIO(IO):
 
 class CloudIO(IO):
 
-    def __init__(self, input_dir: str, bucket):
+    def __init__(self, input_dir: str, bucket: Bucket):
         super(CloudIO, self).__init__(input_dir=input_dir, bucket=bucket)
 
     @staticmethod

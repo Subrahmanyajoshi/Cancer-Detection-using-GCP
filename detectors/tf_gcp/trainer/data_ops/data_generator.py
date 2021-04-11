@@ -2,12 +2,14 @@ import os
 
 import numpy as np
 from cv2 import imread, resize
+from google.cloud.storage import Bucket
 from tensorflow import keras
 
 
 class DataGenerator(keras.utils.Sequence):
 
-    def __init__(self, image_filenames, labels, batch_size, dest_dir, bucket):
+    def __init__(self, image_filenames: np.ndarray, labels: np.ndarray, batch_size: int, dest_dir: str,
+                 bucket: Bucket):
         self.image_filenames = image_filenames
         self.labels = labels
         self.batch_size = batch_size
@@ -17,7 +19,7 @@ class DataGenerator(keras.utils.Sequence):
     def __len__(self):
         return (np.ceil(len(self.image_filenames) / float(self.batch_size))).astype(np.int)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int):
         batch_x = self.image_filenames[idx * self.batch_size: (idx + 1) * self.batch_size]
         batch_y = self.labels[idx * self.batch_size: (idx + 1) * self.batch_size]
         
