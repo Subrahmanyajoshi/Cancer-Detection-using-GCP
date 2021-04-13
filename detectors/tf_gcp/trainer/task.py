@@ -8,23 +8,28 @@ import tensorflow as tf
 from detectors.common import BucketOps, SystemOps
 from detectors.tf_gcp.trainer.data_ops.data_generator import DataGenerator
 from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO, LocalIO
-from detectors.tf_gcp.trainer.models import cnn
+from detectors.tf_gcp.trainer.models.models import CNNModel
 
 
 class Trainer(object):
     CLASSIFICATION_MODEL = 'Breast_cancer_detector.hdf5'
 
     def __init__(self, args: Namespace):
+        """ Init method
+        Args:
+            args (Namespace): command line arguments
+        """
         self.args = args
 
     @staticmethod
     def cleanup():
+        """ Deletes temporary directories created while training"""
         SystemOps.check_and_delete('all_images')
         SystemOps.check_and_delete('all_images.zip')
         SystemOps.check_and_delete('checkpoints')
 
     def train(self):
-        Model = cnn.keras_estimator()
+        Model = CNNModel(img_shape=(None, 300, 300, 3)).build()
         Model.summary()
 
         bucket = BucketOps.get_bucket(self.args.bucket)
@@ -38,31 +43,44 @@ class Trainer(object):
             io_operator = LocalIO(input_dir=self.args.input_dir)
 
         X_train_files, y_train, X_val_files, y_val = io_operator.load()
-        train_generator = DataGenerator(X_train_files, y_train, self.args.batch_size,
-                                        './all_images/', bucket)
-        validation_generator = DataGenerator(X_val_files, y_val, self.args.batch_size,
-                                             './all_images/', bucket)
+        train_generator = DataGenerator(image_filenames=X_train_files,
+                                        labels=y_train,
+                                        batch_size=self.args.batch_size,
+                                        dest_dir='./all_images/',
+                                        bucket=bucket)
+        validation_generator = DataGenerator(image_filenames=X_val_files,
+                                             labels=y_val,
+                                             batch_size=self.args.batch_size,
+                                             dest_dir='./all_images/',
+                                             bucket=bucket)
 
         SystemOps.clean_dir('checkpoints')
+
+        # Callback to save checkpoints after every epoch
         cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='./checkpoints/model.{epoch:02d}-{'
                                                                     'val_loss:.2f}.hdf5',
                                                            monitor='val_loss',
                                                            save_freq='epoch',
                                                            save_best_only=False)
+        # Tensorboard callback
         tensorboard = tf.keras.callbacks.TensorBoard(log_dir=os.path.join(self.args.output_dir, 'tensorboard'))
 
-        epochs = self.args.num_epochs
         history = Model.fit(
             train_generator,
             validation_data=validation_generator,
-            epochs=epochs,
+            epochs=self.args.num_epochs,
             callbacks=[cp_checkpoint, tensorboard],
             steps_per_epoch=self.args.steps_per_epoch
         )
 
+        # save model as hdf5 file
         Model.save(Trainer.CLASSIFICATION_MODEL)
+
+        # send saved model to output directory
         io_operator.write(Trainer.CLASSIFICATION_MODEL, self.args.output_dir)
         io_operator.write('checkpoints', self.args.output_dir)
+
+        # Delete unwanted directories used while training
         Trainer.cleanup()
 
 

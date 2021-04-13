@@ -10,6 +10,14 @@ class DataGenerator(keras.utils.Sequence):
 
     def __init__(self, image_filenames: np.ndarray, labels: np.ndarray, batch_size: int, dest_dir: str,
                  bucket: Bucket):
+        """ Init Method
+        Args:
+            image_filenames (np.array): List of image filenames
+            labels (np.array): labels associated with filenames
+            batch_size (int): batch size of model
+            dest_dir (str): directory where actual images are located
+            bucket (Bucket): Gcs bucket name
+        """
         self.image_filenames = image_filenames
         self.labels = labels
         self.batch_size = batch_size
@@ -20,9 +28,16 @@ class DataGenerator(keras.utils.Sequence):
         return (np.ceil(len(self.image_filenames) / float(self.batch_size))).astype(np.int)
 
     def __getitem__(self, idx: int):
+        """ Creates a batch of images and associated labels and returns it
+        Args:
+            idx (int): index from which to start the batch
+        Returns:
+            A batch of images and labels associated with it
+        """
         batch_x = self.image_filenames[idx * self.batch_size: (idx + 1) * self.batch_size]
         batch_y = self.labels[idx * self.batch_size: (idx + 1) * self.batch_size]
-        
+
+        # Read Images and crate a list from it
         images = [imread(os.path.join(self.dest_dir + str(file_name))) for file_name in batch_x]
 
         # the following code downloads images one by one from google storage every time this generator
