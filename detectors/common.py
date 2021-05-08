@@ -24,7 +24,6 @@ class SystemOps(object):
         Args:
             path (str): path to directory to be created
         Returns:
-            None
         """
         os.mkdir(path=path)
 
@@ -34,7 +33,6 @@ class SystemOps(object):
         Args:
             path (str): path to directory to be cleaned
         Returns:
-            None
         """
         SystemOps.check_and_delete(path=path)
         SystemOps.create_dir(path=path)
@@ -45,7 +43,6 @@ class SystemOps(object):
         Args:
             command (str): shell command to be executed
         Returns:
-            None
         """
         os.system(command)
 

@@ -13,7 +13,7 @@ from detectors.common import SystemOps
 
 class IO(abc.ABC):
     """ An abstract class which outlines the structure of Io classes. All classes which inherit from this class
-    should implement the abstract methods """
+    should implement all of the abstract methods """
 
     # standard file names
     X_TRAIN = 'X_train_filenames.npy'
@@ -95,7 +95,6 @@ class CloudIO(IO):
             src_path (str): path in local file system
             dest_path (str): path in Google Cloud Storage Bucket
         Returns:
-            None
         """
         blob = self.bucket.blob(dest_path)
         blob.upload_from_filename(src_path)
@@ -106,7 +105,6 @@ class CloudIO(IO):
             local_path (str): path in local file system
             gcs_path (str): path in Google Cloud Storage Bucket
         Returns:
-            None
         """
         for local_file in os.listdir(local_path):
             l_file = os.path.join(local_path, local_file)
@@ -131,7 +129,6 @@ class CloudIO(IO):
             src_path (str): path in local file system
             dest_path (str): path in Google Cloud Storage
         Returns:
-            None
         """
         if self.bucket is None:
             raise ValueError('Please provide the bucket object to copy file to GCS')
