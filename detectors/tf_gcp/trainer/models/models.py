@@ -55,8 +55,8 @@ class CNNModel(Model):
 
         model.build(input_shape=self.img_shape)
         model.compile(optimizer=optimizers.Adam(learning_rate=1e-4),
-                      loss=tf.keras.losses.categorical_crossentropy(from_logits=True),
-                      metrics=[tf.keras.metrics.categorical_accuracy()])
+                      loss="categorical_crossentropy",
+                      metrics=["accuracy"])
         return model
 
 
@@ -86,14 +86,15 @@ class VGG19Model(Model):
         inputs = tf.keras.Input(shape=self.img_shape)
         x = base_model(inputs, training=False)
         x = layers.GlobalAveragePooling2D()(x)
+        x = layers.Flatten()(x)
         x = layers.Dense(1024, activation='relu')(x)
         x = layers.Dense(1024, activation='relu')(x)
         x = layers.Dense(512, activation='relu')(x)
         outputs = layers.Dense(2, activation='softmax')(x)
         model = tf.keras.Model(inputs, outputs)
-
-        model.compile(optimizer=optimizers.Adam(learning_rate=1e-4),
-                      loss=tf.keras.losses.categorical_crossentropy(from_logits=True),
-                      metrics=[tf.keras.metrics.categorical_accuracy()])
+        
+        model.compile(optimizer="adam",
+                      loss="categorical_crossentropy",
+                      metrics=["accuracy"])
 
         return model

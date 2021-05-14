@@ -8,7 +8,7 @@ import tensorflow as tf
 from detectors.common import BucketOps, SystemOps
 from detectors.tf_gcp.trainer.data_ops.data_generator import DataGenerator
 from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO, LocalIO
-from detectors.tf_gcp.trainer.models.models import CNNModel
+from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
 
 
 class Trainer(object):
@@ -29,7 +29,8 @@ class Trainer(object):
         SystemOps.check_and_delete('checkpoints')
 
     def train(self):
-        Model = CNNModel(img_shape=(None, 300, 300, 3)).build()
+        Model = CNNModel(img_shape=(None, 650, 650, 3)).build()
+#         Model = VGG19Model(img_shape=(650, 650, 3)).build()
         Model.summary()
 
         bucket = BucketOps.get_bucket(self.args.bucket)
@@ -38,7 +39,7 @@ class Trainer(object):
             io_operator = CloudIO(input_dir=self.args.input_dir, bucket=bucket)
             os.system(f"gsutil cp -r {os.path.join(self.args.input_dir, 'all_images.zip')} ./")
             with zipfile.ZipFile('all_images.zip', 'r') as zip_ref:
-                zip_ref.extractall('./')
+                zip_ref.extractall('./all_images')
         else:
             io_operator = LocalIO(input_dir=self.args.input_dir)
 

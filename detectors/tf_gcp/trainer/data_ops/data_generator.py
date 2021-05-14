@@ -51,7 +51,8 @@ class DataGenerator(keras.utils.Sequence):
             images.append(imread(file_name))
             os.remove(file_name)
         """
-
-        images = np.array([resize(img, (300, 300))for img in images]) / 255.0
+        images = np.array(images) / 255.0
+        print(images[0].shape)
         labels = np.array(batch_y)
+        print(labels[0].shape)
         return images, labels
