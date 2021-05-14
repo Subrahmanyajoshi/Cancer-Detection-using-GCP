@@ -50,19 +50,19 @@ class CNNModel(Model):
             layers.Dropout(0.5),  # Dropout for regularization
             layers.Dense(512, activation='relu'),
             layers.Dense(256, activation='relu'),
-            layers.Dense(1, activation='sigmoid')
+            layers.Dense(2, activation='softmax')
         ])
 
         model.build(input_shape=self.img_shape)
         model.compile(optimizer=optimizers.Adam(learning_rate=1e-4),
-                      loss='binary_crossentropy',
-                      metrics=['accuracy'])
+                      loss=tf.keras.losses.categorical_crossentropy(from_logits=True),
+                      metrics=[tf.keras.metrics.categorical_accuracy()])
         return model
 
 
-class VGGModel(Model):
+class VGG19Model(Model):
 
-    """ Use vgg19 model for transfer learning"""
+    """ Use VGG19 model for transfer learning"""
 
     def __init__(self, img_shape: Optional[Tuple] = (650, 650, 3)):
         """ Init method
@@ -89,11 +89,11 @@ class VGGModel(Model):
         x = layers.Dense(1024, activation='relu')(x)
         x = layers.Dense(1024, activation='relu')(x)
         x = layers.Dense(512, activation='relu')(x)
-        outputs = layers.Dense(1, activation='sigmoid')(x)
+        outputs = layers.Dense(2, activation='softmax')(x)
         model = tf.keras.Model(inputs, outputs)
 
-        model.compile(optimizer=optimizers.Adam(),
-                      loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
-                      metrics=[tf.keras.metrics.BinaryAccuracy()])
+        model.compile(optimizer=optimizers.Adam(learning_rate=1e-4),
+                      loss=tf.keras.losses.categorical_crossentropy(from_logits=True),
+                      metrics=[tf.keras.metrics.categorical_accuracy()])
 
         return model
