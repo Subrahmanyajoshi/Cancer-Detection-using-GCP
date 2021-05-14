@@ -5,6 +5,7 @@ import tensorflow as tf
 from tensorflow.keras import optimizers
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.applications import VGG19
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
@@ -21,7 +22,7 @@ class Model(ABC):
 
 class CNNModel(Model):
 
-    def __init__(self, img_shape: Optional[Tuple] = (None, 300, 300, 3)):
+    def __init__(self, img_shape: Optional[Tuple] = (None, 650, 650, 3)):
         """ Init method
         Args:
             img_shape (Optional[Tuple]): shape of input image
@@ -56,4 +57,43 @@ class CNNModel(Model):
         model.compile(optimizer=optimizers.Adam(learning_rate=1e-4),
                       loss='binary_crossentropy',
                       metrics=['accuracy'])
+        return model
+
+
+class VGGModel(Model):
+
+    """ Use vgg19 model for transfer learning"""
+
+    def __init__(self, img_shape: Optional[Tuple] = (650, 650, 3)):
+        """ Init method
+        Args:
+            img_shape (Optional[Tuple]): shape of input image
+        """
+        self.img_shape = img_shape
+
+    def build(self):
+        """ Creates a model, compiles it and returns it
+        Args:
+        Returns:
+            Built model
+        """
+        base_model = VGG19(
+            weights='imagenet',
+            input_shape=self.img_shape,
+            include_top=False
+        )
+        base_model.trainable = False
+        inputs = tf.keras.Input(shape=self.img_shape)
+        x = base_model(inputs, training=False)
+        x = layers.GlobalAveragePooling2D()(x)
+        x = layers.Dense(1024, activation='relu')(x)
+        x = layers.Dense(1024, activation='relu')(x)
+        x = layers.Dense(512, activation='relu')(x)
+        outputs = layers.Dense(1, activation='sigmoid')(x)
+        model = tf.keras.Model(inputs, outputs)
+
+        model.compile(optimizer=optimizers.Adam(),
+                      loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                      metrics=[tf.keras.metrics.BinaryAccuracy()])
+
         return model
