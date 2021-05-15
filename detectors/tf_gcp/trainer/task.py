@@ -25,12 +25,11 @@ class Trainer(object):
     def cleanup():
         """ Deletes temporary directories created while training"""
         SystemOps.check_and_delete('all_images')
-        SystemOps.check_and_delete('all_images.zip')
         SystemOps.check_and_delete('checkpoints')
 
     def train(self):
         Model = CNNModel(img_shape=(None, 650, 650, 3)).build()
-#         Model = VGG19Model(img_shape=(650, 650, 3)).build()
+#         Model = VGG19Model(img_shape=(None, 650, 650, 3)).build()
         Model.summary()
 
         bucket = BucketOps.get_bucket(self.args.bucket)
@@ -40,9 +39,10 @@ class Trainer(object):
             os.system(f"gsutil cp -r {os.path.join(self.args.input_dir, 'all_images.zip')} ./")
             with zipfile.ZipFile('all_images.zip', 'r') as zip_ref:
                 zip_ref.extractall('./all_images')
+            SystemOps.check_and_delete('all_images.zip')
         else:
             io_operator = LocalIO(input_dir=self.args.input_dir)
-
+        
         X_train_files, y_train, X_val_files, y_val = io_operator.load()
         train_generator = DataGenerator(image_filenames=X_train_files,
                                         labels=y_train,
