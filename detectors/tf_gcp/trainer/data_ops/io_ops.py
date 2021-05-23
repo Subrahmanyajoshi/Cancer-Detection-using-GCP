@@ -123,13 +123,19 @@ class CloudIO(IO):
         y_val = CloudIO.load_npy(file_name=self.y_val)
         return X_train_filenames, y_train, X_val_filenames, y_val
 
-    def write(self, src_path: str, dest_path: str):
+    def write(self, src_path: str, dest_path: str, use_system_cmd: bool = True):
         """ Writes files/folders to Google Cloud Storage
         Args:
             src_path (str): path in local file system
             dest_path (str): path in Google Cloud Storage
+            use_system_cmd (bool): a boolean switch to inform whether to use GCS modules or system commands to write
+                                   to GCS
         Returns:
         """
+        if use_system_cmd:
+            os.system(f"gsutil mv -r {src_path} {dest_path}")
+            return
+
         if self.bucket is None:
             raise ValueError('Please provide the bucket object to copy file to GCS')
 

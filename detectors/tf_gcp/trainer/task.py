@@ -29,7 +29,7 @@ class Trainer(object):
 
     def train(self):
         Model = CNNModel(img_shape=(None, 650, 650, 3)).build()
-#         Model = VGG19Model(img_shape=(None, 650, 650, 3)).build()
+        # Model = VGG19Model(img_shape=(None, 650, 650, 3)).build()
         Model.summary()
 
         bucket = BucketOps.get_bucket(self.args.bucket)
@@ -61,8 +61,7 @@ class Trainer(object):
         cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='./checkpoints/model.{epoch:02d}-{'
                                                                     'val_loss:.2f}.hdf5',
                                                            monitor='val_loss',
-                                                           save_freq='epoch',
-                                                           save_best_only=False)
+                                                           save_best_only=True)
         # Tensorboard callback
         tensorboard = tf.keras.callbacks.TensorBoard(log_dir=os.path.join(self.args.output_dir, 'tensorboard'))
 
