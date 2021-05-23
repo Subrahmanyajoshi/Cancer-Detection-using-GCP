@@ -3,6 +3,11 @@
 
 # Cache folders for pytests
 .pytest_cache/
+__pycache__
+
+# Tensorboard directories
+tensorboard
+
 
 # Editors, OS
 .idea/
@@ -12,3 +17,9 @@ Thumbs.db
 
 # python environments
 .python3/
+
+# images
+*.png
+*.jpg
+*.jpeg
+*.dcm
