@@ -2,10 +2,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 REQUIRED_PACKAGES = [
-    'scikit-learn==0.20.1',
-    'tensorflow==2.3.0',
-    'opencv-python==4.5.1.48',
-    'google-cloud-storage==1.37.1'
+    'scikit-learn==0.20.1'
 ]
 
 setup(
