@@ -1,5 +1,7 @@
 import os
 import shutil
+
+import yaml
 from google.cloud import storage
 
 
@@ -94,3 +96,12 @@ class BucketOps(object):
         Returns:
             Absolute path inside Google Cloud storage"""
         return os.path.join(f"gs://{bucket_name}", path)
+
+
+class YamlConfig(object):
+
+    @staticmethod
+    def load(filepath: str):
+        with open(filepath) as filestream:
+            config = yaml.safe_load(filestream)
+        return config

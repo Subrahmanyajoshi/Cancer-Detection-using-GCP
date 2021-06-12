@@ -1,0 +1,55 @@
+# NOTE: while mentioning Google cloud storage paths, mention full path starting from 'gs://'
+
+# mention train_type, either 'local' or 'gcp'.
+train_type: gcp
+
+# Two types of models are available, CNN from scratch and VGG19 using transfer learning
+model_params:
+  model: CNN
+  image_shape: (650, 650, 3)
+  optimizer: 'adam'
+  loss: "binary_crossentropy"
+  metrics: ["accuracy"]
+
+train_params:
+  batch_size: 32
+  output_dir: 'gs://vernal-buffer-285906/train_results'
+  data_dir: 'gs://vernal-buffer-285906/train_data/'
+  num_epochs: 40
+  steps_per_epoch:  252
+  use_multiprocessig: True
+  # number of workers to use if multiprocessing is enabled
+  workers: 5
+
+  # Comment/remove a callback section to disable it
+  callbacks:
+    # Tensorboard callback.
+    TensorBoard:
+      log_dir: 'gs://vernal-buffer-285906/train_results/tensorboard'
+
+    # Model checkpoint callback. only specify model name and other parameters here. A folder named checkpoints
+    # will be created in 'output_dir' specified in train_params and checkpoints will be dumped to it.
+    ModelCheckpoint:
+      filepath: 'model.{epoch:02d}-{val_loss:.2f}.hdf5'
+      monitor: 'val_accuracy'
+      save_freq: 'epoch'
+      period: 3
+
+    # Early stopping callback.
+    EarlyStopping:
+      monitor: 'val_accuracy'
+      mode: 'min'
+      verbose: 1
+      patience: 10
+
+    # Csv logger callback. Only mention log file name here. log csv file will be dumped to 'output_dir' specified
+    # in train_params above.
+    CSVLogger:
+      filename: 'train_logs.csv'
+      separator: ','
+      append: False
+
+
+predict_params:
+  model_path: 'gs://vernal-buffer-285906/train_results/model.h5'
+  data_path: ''

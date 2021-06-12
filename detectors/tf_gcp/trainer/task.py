@@ -1,84 +1,101 @@
 import argparse
+import importlib
 import os
 import zipfile
 from argparse import Namespace
 
-import tensorflow as tf
-
-from detectors.common import BucketOps, SystemOps
+from detectors.common import BucketOps, SystemOps, YamlConfig
 from detectors.tf_gcp.trainer.data_ops.data_generator import DataGenerator
 from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO, LocalIO
 from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
 
 
 class Trainer(object):
-    CLASSIFICATION_MODEL = 'Breast_cancer_detector.hdf5'
+    MODEL_NAME = 'Breast_cancer_detector.h5'
 
-    def __init__(self, args: Namespace):
+    def __init__(self, config: dict, bucket: str = None):
         """ Init method
         Args:
-            args (Namespace): command line arguments
+            config (dict): Dictionary containing configurations
+            bucket (str): Bucket name
         """
-        self.args = args
+        self.run_type = config.get('run_type', '').strip()
+        self.train_params = Namespace(**config.get('train_params'))
+        self.model_params = Namespace(**config.get('model_params'))
+        self.bucket = BucketOps.get_bucket(bucket)
+        self.callbacks = self.init_callbacks()
+
+    def init_callbacks(self):
+        """ Creates callback objects mentioned in configurations """
+        callbacks = []
+        module = importlib.import_module('tensorflow.keras.callbacks')
+        for cb in self.train_params.callbacks:
+            if cb == 'ModelCheckpoint':
+                _, filename = os.path.split(self.train_params.callbacks[cb]['filepath'])
+                self.train_params.callbacks[cb]['filepath'] = os.path.join('checkpoints', filename)
+            obj = getattr(module, cb)
+            callbacks.append(obj(**self.train_params.callbacks[cb]))
+        return callbacks
 
     @staticmethod
     def cleanup():
         """ Deletes temporary directories created while training"""
         SystemOps.check_and_delete('all_images')
         SystemOps.check_and_delete('checkpoints')
+        SystemOps.check_and_delete('trained_model')
 
     def train(self):
-        Model = CNNModel(img_shape=(None, 650, 650, 3)).build()
-        # Model = VGG19Model(img_shape=(None, 650, 650, 3)).build()
+        if self.model_params.model == 'CNN':
+            Model = CNNModel(img_shape=(None,) + self.model_params.image_shape).build(self.model_params)
+        elif self.model_params.model == 'VGG19':
+            Model = VGG19Model(img_shape=(None,) + self.model_params.image_shape).build(self.model_params)
+        else:
+            raise NotImplementedError("Specified model is currently not supported")
         Model.summary()
 
-        bucket = BucketOps.get_bucket(self.args.bucket)
-        
-        if self.args.input_dir.startswith('gs://'):
-            io_operator = CloudIO(input_dir=self.args.input_dir, bucket=bucket)
-            os.system(f"gsutil cp -r {os.path.join(self.args.input_dir, 'all_images.zip')} ./")
+        if self.run_type == 'ai_platform':
+            io_operator = CloudIO(input_dir=self.train_params.input_dir, bucket=self.bucket)
+            os.system(f"gsutil -m cp -r {os.path.join(self.train_params.input_dir, 'all_images.zip')} ./")
             with zipfile.ZipFile('all_images.zip', 'r') as zip_ref:
                 zip_ref.extractall('./all_images')
             SystemOps.check_and_delete('all_images.zip')
+        elif self.run_type == 'local':
+            io_operator = LocalIO(input_dir=self.train_params.input_dir)
         else:
-            io_operator = LocalIO(input_dir=self.args.input_dir)
-        
+            raise RuntimeError(f"run_type must be either 'local' or 'ai_platform', it can't be {self.run_type}")
+
         X_train_files, y_train, X_val_files, y_val = io_operator.load()
         train_generator = DataGenerator(image_filenames=X_train_files,
                                         labels=y_train,
-                                        batch_size=self.args.batch_size,
+                                        batch_size=self.train_params.batch_size,
                                         dest_dir='./all_images/',
-                                        bucket=bucket)
+                                        bucket=self.bucket)
         validation_generator = DataGenerator(image_filenames=X_val_files,
                                              labels=y_val,
-                                             batch_size=self.args.batch_size,
+                                             batch_size=self.train_params.batch_size,
                                              dest_dir='./all_images/',
-                                             bucket=bucket)
+                                             bucket=self.bucket)
 
         SystemOps.clean_dir('checkpoints')
-
-        # Callback to save checkpoints after every epoch
-        cp_checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath='./checkpoints/model.{epoch:02d}-{'
-                                                                    'val_loss:.2f}.hdf5',
-                                                           monitor='val_loss',
-                                                           save_best_only=True)
-        # Tensorboard callback
-        tensorboard = tf.keras.callbacks.TensorBoard(log_dir=os.path.join(self.args.output_dir, 'tensorboard'))
 
         history = Model.fit(
             train_generator,
             validation_data=validation_generator,
-            epochs=self.args.num_epochs,
-            callbacks=[cp_checkpoint, tensorboard],
-            steps_per_epoch=self.args.steps_per_epoch
+            epochs=self.train_params.num_epochs,
+            callbacks=self.callbacks,
+            steps_per_epoch=self.train_params.steps_per_epoch,
+            workers=self.train_params.workers,
+            use_multiprocessing=self.train_params.use_multiprocessing
         )
 
         # save model as hdf5 file
-        Model.save(Trainer.CLASSIFICATION_MODEL)
+        Model.save(Trainer.MODEL_NAME)
 
-        # send saved model to output directory
-        io_operator.write(Trainer.CLASSIFICATION_MODEL, self.args.output_dir)
-        io_operator.write('checkpoints', self.args.output_dir)
+        SystemOps.create_dir('trained_model')
+        SystemOps.move(Trainer.MODEL_NAME, 'trained_model')
+        # send saved model to 'trained_model' directory
+        io_operator.write('trained_model', self.train_params.output_dir)
+        io_operator.write('checkpoints', self.train_params.output_dir)
 
         # Delete unwanted directories used while training
         Trainer.cleanup()
@@ -91,20 +108,15 @@ def main():
                         required=False)
     parser.add_argument('--bucket', help='Name of the GCS bucket in which data is stored',
                         required=False)
-    parser.add_argument('--batch_size', help='Number of examples to compute gradient over.', type=int,
-                        default=32, required=False)
-    parser.add_argument('--output-dir', help='GCS location to write checkpoints and export models',
-                        required=False)
     parser.add_argument('--job-dir', type=str, help='GCS location to write checkpoints and export models',
                         required=False)
-    parser.add_argument('--input-dir', type=str, help='path to train data directory',
-                        required=True)
-    parser.add_argument('--num-epochs', type=int, help='number of epochs',
-                        required=True)
-    parser.add_argument('--steps-per-epoch', type=int, help='number of steps per epoch', default=2,
-                        required=False)
+    parser.add_argument('--config', type=str, required=False, default='../config/config.yaml',
+                        help='Yaml configuration file path')
+
     args = parser.parse_args()
-    trainer = Trainer(args=args)
+    config = YamlConfig.load(filepath=args.config)
+
+    trainer = Trainer(config=config, bucket=args.bucket)
     trainer.train()
 
 

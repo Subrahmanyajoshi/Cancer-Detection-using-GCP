@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
+from argparse import Namespace
 from typing import Optional, Tuple
 
 import tensorflow as tf
-from tensorflow.keras import optimizers
 from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.applications import VGG19
@@ -15,7 +15,7 @@ class Model(ABC):
         should implement the abstract methods """
 
     @abstractmethod
-    def build(self):
+    def build(self, model_params: Namespace):
         """ This method does not require implementation inside abstract class"""
         ...
 
@@ -29,7 +29,7 @@ class CNNModel(Model):
         """
         self.img_shape = img_shape
 
-    def build(self):
+    def build(self, model_params: Namespace):
         """ Creates a cnn model, compiles it and returns it
         Args:
         Returns:
@@ -54,9 +54,10 @@ class CNNModel(Model):
         ])
 
         model.build(input_shape=self.img_shape)
-        model.compile(optimizer=optimizers.Adam(learning_rate=1e-4),
-                      loss="categorical_crossentropy",
-                      metrics=["accuracy"])
+        model.compile(optimizer=model_params.optimizer,
+                      loss=model_params.loss,
+                      metrics=model_params.metrics)
+
         return model
 
 
@@ -71,7 +72,7 @@ class VGG19Model(Model):
         """
         self.img_shape = img_shape
 
-    def build(self):
+    def build(self, model_params: Namespace):
         """ Creates a model, compiles it and returns it
         Args:
         Returns:
@@ -92,9 +93,9 @@ class VGG19Model(Model):
         x = layers.Dense(512, activation='relu')(x)
         outputs = layers.Dense(2, activation='softmax')(x)
         model = tf.keras.Model(inputs, outputs)
-        
-        model.compile(optimizer="adam",
-                      loss="categorical_crossentropy",
-                      metrics=["accuracy"])
+
+        model.compile(optimizer=model_params.optimizer,
+                      loss=model_params.loss,
+                      metrics=model_params.metrics)
 
         return model
