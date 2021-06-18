@@ -43,18 +43,19 @@ class Predictor(object):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--predict', type=str, action='store_true', required=False,
+    parser.add_argument('--predict', action='store_true', required=False,
                         help='A boolean switch to tell the script to run the predictions')
-    parser.add_argument('--train', type=str, action='store_true', required=False,
+    parser.add_argument('--train', action='store_true', required=False,
                         help='A boolean switch to tell the script to run training')
-    parser.add_argument('--config', type=str, required=False, default='../config/config.yaml',
+    parser.add_argument('--train-config', type=str, required=False, default='../config/config.yaml',
                         help='Yaml configuration file path')
+    
     args = parser.parse_args()
 
     if not args.train and not args.predict:
         raise ValueError('Please specify either --train or --predict option while running')
 
-    config = YamlConfig.load(filepath=args.config)
+    config = YamlConfig.load(filepath=args.train_config)
 
     if args.train:
         print('Initialising training')

@@ -22,7 +22,7 @@ class Model(ABC):
 
 class CNNModel(Model):
 
-    def __init__(self, img_shape: Optional[Tuple] = (None, 650, 650, 3)):
+    def __init__(self, img_shape: Tuple = (None, 650, 650, 3)):
         """ Init method
         Args:
             img_shape (Optional[Tuple]): shape of input image
@@ -48,9 +48,9 @@ class CNNModel(Model):
             layers.MaxPooling2D(pool_size=(2, 2)),
             layers.Flatten(),
             layers.Dropout(0.5),  # Dropout for regularization
-            layers.Dense(512, activation='relu'),
-            layers.Dense(256, activation='relu'),
-            layers.Dense(2, activation='softmax')
+            layers.Dense(124, activation='relu'),
+            layers.Dense(124, activation='relu'),
+            layers.Dense(1, activation='sigmoid')
         ])
 
         model.build(input_shape=self.img_shape)
@@ -65,7 +65,7 @@ class VGG19Model(Model):
 
     """ Use VGG19 model for transfer learning"""
 
-    def __init__(self, img_shape: Optional[Tuple] = (650, 650, 3)):
+    def __init__(self, img_shape: Tuple = (650, 650, 3)):
         """ Init method
         Args:
             img_shape (Optional[Tuple]): shape of input image
@@ -89,9 +89,8 @@ class VGG19Model(Model):
         x = layers.GlobalAveragePooling2D()(x)
         x = layers.Flatten()(x)
         x = layers.Dense(1024, activation='relu')(x)
-        x = layers.Dense(1024, activation='relu')(x)
         x = layers.Dense(512, activation='relu')(x)
-        outputs = layers.Dense(2, activation='softmax')(x)
+        outputs = layers.Dense(1, activation='sigmoid')(x)
         model = tf.keras.Model(inputs, outputs)
 
         model.compile(optimizer=model_params.optimizer,

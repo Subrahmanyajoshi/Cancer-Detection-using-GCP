@@ -9,7 +9,7 @@ from tensorflow import keras
 class DataGenerator(keras.utils.Sequence):
 
     def __init__(self, image_filenames: np.ndarray, labels: np.ndarray, batch_size: int, dest_dir: str,
-                 bucket: Bucket):
+                 bucket: Bucket, image_shape: tuple):
         """ Init Method
         Args:
             image_filenames (np.array): List of image filenames
@@ -23,6 +23,9 @@ class DataGenerator(keras.utils.Sequence):
         self.batch_size = batch_size
         self.dest_dir = dest_dir
         self.bucket = bucket
+        self.img_width = image_shape[0]
+        self.img_height = image_shape[1]
+        self.img_channels = image_shape[2]
 
     def __len__(self):
         return (np.ceil(len(self.image_filenames) / float(self.batch_size))).astype(np.int)
@@ -51,6 +54,6 @@ class DataGenerator(keras.utils.Sequence):
             images.append(imread(file_name))
             os.remove(file_name)
         """
-        images = np.array([resize(img, (650, 650))for img in images]) / 255.0
+        images = np.array([resize(img, (self.img_width, self.img_height))for img in images]) / 255.0
         labels = np.array(batch_y)
         return images, labels

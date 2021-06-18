@@ -1,25 +1,18 @@
 # NOTE: while mentioning Google cloud storage paths, mention full path starting from 'gs://'
 
-# mention train_type, either 'local' or 'gcp'.
-train_type: gcp
-
-# Two types of models are available, CNN from scratch and VGG19 using transfer learning
-model_params:
-  model: CNN
-  image_shape: (650, 650, 3)
-  optimizer: 'adam'
-  loss: "binary_crossentropy"
-  metrics: ["accuracy"]
+# mention train_type, either 'local' or 'ai_platform'.
+train_type: local
 
 train_params:
-  batch_size: 32
-  output_dir: 'gs://vernal-buffer-285906/train_results'
+  batch_size: 16
+  num_epochs: 10
+  steps_per_epoch:  1
   data_dir: 'gs://vernal-buffer-285906/train_data/'
-  num_epochs: 40
-  steps_per_epoch:  252
-  use_multiprocessig: True
+  output_dir: 'gs://vernal-buffer-285906/train_results'
+  image_shape: (650, 650, 3)
+  use_multiprocessing: False
   # number of workers to use if multiprocessing is enabled
-  workers: 5
+  workers: 1 
 
   # Comment/remove a callback section to disable it
   callbacks:
@@ -27,13 +20,14 @@ train_params:
     TensorBoard:
       log_dir: 'gs://vernal-buffer-285906/train_results/tensorboard'
 
-    # Model checkpoint callback. only specify model name and other parameters here. A folder named checkpoints
-    # will be created in 'output_dir' specified in train_params and checkpoints will be dumped to it.
+    # Model checkpoint callback.
     ModelCheckpoint:
-      filepath: 'model.{epoch:02d}-{val_loss:.2f}.hdf5'
+      filepath: 'gs://vernal-buffer-285906/train_results/checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5'
       monitor: 'val_accuracy'
       save_freq: 'epoch'
+      verbose: 1
       period: 3
+      save_best_only: False
 
     # Early stopping callback.
     EarlyStopping:
@@ -42,12 +36,18 @@ train_params:
       verbose: 1
       patience: 10
 
-    # Csv logger callback. Only mention log file name here. log csv file will be dumped to 'output_dir' specified
-    # in train_params above.
+    # Csv logger callback. 
     CSVLogger:
-      filename: 'train_logs.csv'
+      filename: 'gs://vernal-buffer-285906/train_results/train_logs.csv'
       separator: ','
       append: False
+
+# Two types of models are available, CNN built from scratch and VGG19 using transfer learning
+model_params:
+  model: CNN
+  optimizer: 'adam'
+  loss: "binary_crossentropy"
+  metrics: ["accuracy"]
 
 
 predict_params:
