@@ -1,8 +1,4 @@
 # NOTE: while mentioning Google cloud storage paths, mention full path starting from 'gs://'
-
-# mention train_type, either 'local' or 'ai_platform'.
-train_type: local
-
 train_params:
   batch_size: 16
   num_epochs: 10
@@ -48,7 +44,6 @@ model_params:
   optimizer: 'adam'
   loss: "binary_crossentropy"
   metrics: ["accuracy"]
-
 
 predict_params:
   model_path: 'gs://vernal-buffer-285906/train_results/model.h5'

@@ -1,8 +1,12 @@
 import argparse
+import json
 import os
 
 from cv2 import imread, resize
 
+from datetime import datetime
+
+import detectors
 from detectors.common import YamlConfig
 from detectors.tf_gcp.trainer.models.models import CNNModel
 from detectors.tf_gcp.trainer.task import Trainer
@@ -41,26 +45,53 @@ class Predictor(object):
             self.predict(abs_path)
 
 
+class TrainerRunner(object):
+
+    def __init__(self, config: dict, train_type: str):
+        self.config = config
+        self.train_type = train_type
+
+    def run(self):
+        if self.train_type == 'local':
+            trainer = Trainer(config=self.config)
+            trainer.train()
+        elif self.train_type == 'ai_platform':
+            train_config = json.dumps(self.config)
+            out_dir = self.config.get('train_params').get('output_dir')
+            job_name = f"breastcancer_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+            os.system(f'gcloud ai-platform jobs submit training {job_name} '
+                      f'--package-path={os.getcwd()}'
+                      f'--job-dir={out_dir}'
+                      f'--module-name={detectors.tf_gcp.trainer.task}'
+                      f'--train-config={train_config}')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--predict', action='store_true', required=False,
                         help='A boolean switch to tell the script to run the predictions')
     parser.add_argument('--train', action='store_true', required=False,
                         help='A boolean switch to tell the script to run training')
-    parser.add_argument('--train-config', type=str, required=False, default='../config/config.yaml',
+    parser.add_argument('--train_type', type=str, required=False, choices=['local', 'ai_platform'],
+                        help='to specify whether to train locally or to submit train job to AI platform')
+    parser.add_argument('--train-config', type=str, required=True,
                         help='Yaml configuration file path')
-    
+
     args = parser.parse_args()
 
     if not args.train and not args.predict:
-        raise ValueError('Please specify either --train or --predict option while running')
+        raise ValueError('Please specify either --train or --predict command line argument while running')
+
+    if args.train and args.train_type is None:
+        raise ValueError("'train_type' argument is required, choices available are ['local', 'ai_platform']")
 
     config = YamlConfig.load(filepath=args.train_config)
 
     if args.train:
         print('Initialising training')
-        trainer = Trainer(config=config)
-        trainer.train()
+        runner = TrainerRunner(config=config, train_type=args.train_type)
+        runner.run()
 
     if args.predict:
         print('Initialising predicting')
