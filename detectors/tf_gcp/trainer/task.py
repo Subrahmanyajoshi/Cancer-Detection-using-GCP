@@ -1,6 +1,8 @@
 import argparse
-import json
+import os
 
+from detectors.common import YamlConfig
+from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO
 from detectors.tf_gcp.trainer.trainer import Trainer
 
 
@@ -13,9 +15,10 @@ def main():
                         required=False)
     parser.add_argument('--train-config', type=str, help='config file containing train configurations',
                         required=False)
-
     args = parser.parse_args()
-    config = json.loads(args.train_config)
+
+    CloudIO.copy_from_gcs(args.train_config, './')
+    config = YamlConfig.load(filepath=os.path.abspath('config.yaml'))
     trainer = Trainer(config=config)
     trainer.train()
 

@@ -89,6 +89,10 @@ class CloudIO(IO):
         np_data = np.load(file)
         return np_data
 
+    @staticmethod
+    def copy_from_gcs(src_path: str, dest_path: str):
+        SystemOps.run_command(f'gsutil -m cp -r {src_path} {dest_path}')
+
     def upload_file_to_gcs(self, src_path: str, dest_path: str):
         """ Uploads file to Google Cloud Storage
         Args:
@@ -133,7 +137,7 @@ class CloudIO(IO):
         Returns:
         """
         if use_system_cmd:
-            os.system(f"gsutil mv -r {src_path} {dest_path}")
+            SystemOps.run_command(f"gsutil mv -r {src_path} {dest_path}")
             return
 
         if self.bucket is None:

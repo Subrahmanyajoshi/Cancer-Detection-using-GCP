@@ -1,12 +1,8 @@
 import argparse
-import json
 import os
 
 from cv2 import imread, resize
 
-from datetime import datetime
-
-import detectors
 from detectors.common import YamlConfig
 from detectors.tf_gcp.trainer.models.models import CNNModel
 from detectors.tf_gcp.trainer.task import Trainer
@@ -31,9 +27,9 @@ class Predictor(object):
         image = image[None, :, :, :]
         result = self.model.predict(image)
         if result > 0.5:
-            print(f'Image: {os.path.basename(img_path)}, Prediction: Cancerous, Confidence: {result*100}%')
+            print(f'Image: {os.path.basename(img_path)}, Prediction: Cancerous, Confidence: {result * 100}%')
         else:
-            print(f'Image: {os.path.basename(img_path)}, Prediction: Cancerous, Benign: {(result-1)*100}%')
+            print(f'Image: {os.path.basename(img_path)}, Prediction: Cancerous, Benign: {(result - 1) * 100}%')
 
     def run(self):
         if os.path.isfile(self.data_path):
@@ -43,28 +39,6 @@ class Predictor(object):
             print(f'Reading images from {self.data_path}')
             abs_path = os.path.join(self.data_path, file)
             self.predict(abs_path)
-
-
-class TrainerRunner(object):
-
-    def __init__(self, config: dict, train_type: str):
-        self.config = config
-        self.train_type = train_type
-
-    def run(self):
-        if self.train_type == 'local':
-            trainer = Trainer(config=self.config)
-            trainer.train()
-        elif self.train_type == 'ai_platform':
-            train_config = json.dumps(self.config)
-            out_dir = self.config.get('train_params').get('output_dir')
-            job_name = f"breastcancer_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
-            os.system(f'gcloud ai-platform jobs submit training {job_name} '
-                      f'--package-path={os.getcwd()}'
-                      f'--job-dir={out_dir}'
-                      f'--module-name={detectors.tf_gcp.trainer.task}'
-                      f'--train-config={train_config}')
 
 
 def main():
@@ -90,8 +64,8 @@ def main():
 
     if args.train:
         print('Initialising training')
-        runner = TrainerRunner(config=config, train_type=args.train_type)
-        runner.run()
+        trainer = Trainer(config=config)
+        trainer.train()
 
     if args.predict:
         print('Initialising predicting')

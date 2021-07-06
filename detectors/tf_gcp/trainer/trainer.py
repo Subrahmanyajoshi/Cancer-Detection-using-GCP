@@ -56,6 +56,7 @@ class Trainer(object):
         SystemOps.check_and_delete('checkpoints')
         SystemOps.check_and_delete('trained_model')
         SystemOps.check_and_delete('train_logs.csv')
+        SystemOps.check_and_delete('config.yaml')
 
     def train(self):
         if self.model_params.model == 'CNN':
@@ -68,7 +69,7 @@ class Trainer(object):
 
         if self.bucket is not None:
             io_operator = CloudIO(input_dir=self.train_params.data_dir, bucket=self.bucket)
-            os.system(f"gsutil -m cp -r {os.path.join(self.train_params.data_dir, 'all_images.zip')} ./")
+            SystemOps.run_command(f"gsutil -m cp -r {os.path.join(self.train_params.data_dir, 'all_images.zip')} ./")
             with zipfile.ZipFile('all_images.zip', 'r') as zip_ref:
                 zip_ref.extractall('./all_images')
             SystemOps.check_and_delete('all_images.zip')

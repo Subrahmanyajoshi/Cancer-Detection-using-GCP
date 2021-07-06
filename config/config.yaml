@@ -40,11 +40,11 @@ train_params:
 
 # Two types of models are available, CNN built from scratch and VGG19 using transfer learning
 model_params:
-  model: CNN
+  model: 'CNN'
   optimizer: 'adam'
   loss: "binary_crossentropy"
   metrics: ["accuracy"]
 
 predict_params:
   model_path: 'gs://vernal-buffer-285906/train_results/model.h5'
-  data_path: ''
+  data_path: 
