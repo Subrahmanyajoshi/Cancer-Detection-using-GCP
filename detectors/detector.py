@@ -1,9 +1,10 @@
 import argparse
 import os
+from argparse import Namespace
 
 from cv2 import imread, resize
 
-from detectors.common import YamlConfig
+from detectors.common import YamlConfig, SystemOps
 from detectors.tf_gcp.trainer.models.models import CNNModel
 from detectors.tf_gcp.trainer.task import Trainer
 
@@ -13,11 +14,17 @@ class Predictor(object):
     def __init__(self, config: dict):
         self.config = config.get('predict_params', {})
         self.data_path = self.config.get('data_path', None)
-        self.img_shape = config.get('model_params').get('image_shape')
+        self.img_shape = eval(config.get('train_params').get('image_shape'))
+        self.model_params =  Namespace(**config.get('model_params'))
         self.model = self.load_model(self.config.get('model_path', None))
 
     def load_model(self, model_path: str):
-        model = CNNModel(img_shape=(None,) + self.img_shape).build()
+        model = CNNModel(img_shape=(None,) + self.img_shape).build(self.model_params)
+
+        if model_path.startswith('gs://'):
+            SystemOps.run_command(f"gsutil -m cp -r {model_path} ./")
+            model_path = os.path.basename(model_path)
+
         model.load_weights(model_path)
         return model
 
@@ -27,18 +34,26 @@ class Predictor(object):
         image = image[None, :, :, :]
         result = self.model.predict(image)
         if result > 0.5:
-            print(f'Image: {os.path.basename(img_path)}, Prediction: Cancerous, Confidence: {result * 100}%')
+            print(f'Image: {os.path.relpath(img_path, self.data_path)}, Prediction: Cancerous, '
+                  f'Confidence: {result * 100}%')
         else:
-            print(f'Image: {os.path.basename(img_path)}, Prediction: Cancerous, Benign: {(result - 1) * 100}%')
+            print(f'Image: {os.path.relpath(img_path, self.data_path)}, Prediction: Benign, '
+                  f'Confidence: {(result - 1) * 100}%')
 
     def run(self):
+        if self.data_path.startswith('gs://'):
+            SystemOps.run_command(f"gsutil -m cp -r {self.data_path} ./")
+            self.data_path = os.path.basename(self.data_path)
+
         if os.path.isfile(self.data_path):
             self.predict(self.data_path)
             return
-        for file in os.listdir(self.data_path):
-            print(f'Reading images from {self.data_path}')
-            abs_path = os.path.join(self.data_path, file)
-            self.predict(abs_path)
+
+        print(f'Reading images from {self.data_path}')
+        for root, dirs, files in os.walk(self.data_path):
+            for file in files:
+                abs_path = os.path.join(root, file)
+                self.predict(abs_path)
 
 
 def main():
@@ -49,7 +64,7 @@ def main():
                         help='A boolean switch to tell the script to run training')
     parser.add_argument('--train_type', type=str, required=False, choices=['local', 'ai_platform'],
                         help='to specify whether to train locally or to submit train job to AI platform')
-    parser.add_argument('--train-config', type=str, required=True,
+    parser.add_argument('--config', type=str, required=True,
                         help='Yaml configuration file path')
 
     args = parser.parse_args()
@@ -60,7 +75,7 @@ def main():
     if args.train and args.train_type is None:
         raise ValueError("'train_type' argument is required, choices available are ['local', 'ai_platform']")
 
-    config = YamlConfig.load(filepath=args.train_config)
+    config = YamlConfig.load(filepath=args.config)
 
     if args.train:
         print('Initialising training')
