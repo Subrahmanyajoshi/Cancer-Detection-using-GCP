@@ -1,14 +1,14 @@
 # NOTE: while mentioning Google cloud storage paths, mention full path starting from 'gs://'
 train_params:
-  batch_size: 16
-  num_epochs: 10
-  steps_per_epoch:  1
+  batch_size: 32
+  num_epochs: 50
+  steps_per_epoch:  119
   data_dir: 'gs://vernal-buffer-285906/train_data/'
   output_dir: 'gs://vernal-buffer-285906/train_results'
   image_shape: (650, 650, 3)
-  use_multiprocessing: False
+  use_multiprocessing: True
   # number of workers to use if multiprocessing is enabled
-  workers: 1 
+  workers: 6
 
   # Comment/remove a callback section to disable it
   callbacks:
