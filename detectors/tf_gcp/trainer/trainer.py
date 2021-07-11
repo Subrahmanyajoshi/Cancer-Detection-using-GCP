@@ -64,7 +64,8 @@ class Trainer(object):
         elif self.model_params.model == 'VGG19':
             Model = VGG19Model(eval(self.train_params.image_shape)).build(self.model_params)
         else:
-            raise NotImplementedError("Specified model is currently not supported")
+            raise NotImplementedError(f"{self.model_params.model} model is currently not supported. "
+                                      f"Please choose between CNN and VGG19")
         Model.summary()
 
         if self.bucket is not None:

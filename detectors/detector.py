@@ -5,7 +5,7 @@ from argparse import Namespace
 from cv2 import imread, resize
 
 from detectors.common import YamlConfig, SystemOps
-from detectors.tf_gcp.trainer.models.models import CNNModel
+from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
 from detectors.tf_gcp.trainer.task import Trainer
 
 
@@ -15,11 +15,17 @@ class Predictor(object):
         self.config = config.get('predict_params', {})
         self.data_path = self.config.get('data_path', None)
         self.img_shape = eval(config.get('train_params').get('image_shape'))
-        self.model_params =  Namespace(**config.get('model_params'))
+        self.model_params = Namespace(**config.get('model_params'))
         self.model = self.load_model(self.config.get('model_path', None))
 
     def load_model(self, model_path: str):
-        model = CNNModel(img_shape=(None,) + self.img_shape).build(self.model_params)
+        if self.model_params.model == 'CNN':
+            model = CNNModel(img_shape=(None,) + self.img_shape).build(self.model_params)
+        elif self.model_params.model == 'VGG19':
+            model = VGG19Model(eval(self.img_shape)).build(self.model_params)
+        else:
+            raise NotImplementedError(f"{self.model_params.model} model is currently not supported. "
+                                      f"Please choose between CNN and VGG19")
 
         if model_path.startswith('gs://'):
             SystemOps.run_command(f"gsutil -m cp -r {model_path} ./")
