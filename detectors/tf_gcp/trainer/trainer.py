@@ -39,7 +39,8 @@ class Trainer(object):
         for cb in self.train_params.callbacks:
             if cb == 'ModelCheckpoint':
                 self.cp_path, filename = os.path.split(self.train_params.callbacks[cb]['filepath'])
-                self.train_params.callbacks[cb]['filepath'] = os.path.join('./checkpoints', filename)
+                self.train_params.callbacks[cb]['filepath'] = os.path.join('./checkpoints',
+                                                                           f"{self.model_params.model}_{filename}")
 
             if cb == 'CSVLogger':
                 self.csv_path, filename = os.path.split(self.train_params.callbacks[cb]['filename'])
@@ -49,8 +50,7 @@ class Trainer(object):
             callbacks.append(obj(**self.train_params.callbacks[cb]))
         return callbacks
 
-    @staticmethod
-    def cleanup():
+    def clean_up(self):
         """ Deletes temporary directories created while training"""
         SystemOps.check_and_delete('all_images')
         SystemOps.check_and_delete('checkpoints')
@@ -106,7 +106,7 @@ class Trainer(object):
 
         # save model as hdf5 file
         SystemOps.create_dir('./trained_model')
-        model_path = os.path.join('./trained_model', Trainer.MODEL_NAME)
+        model_path = os.path.join('./trained_model', f"{self.model_params.model}_{Trainer.MODEL_NAME}")
         Model.save_weights(model_path)
         model_yaml = Model.to_yaml()
         with open("./trained_model/model.yaml", "w") as yaml_file:
@@ -116,6 +116,3 @@ class Trainer(object):
         io_operator.write('./trained_model', self.train_params.output_dir)
         io_operator.write('./checkpoints/*', self.cp_path)
         io_operator.write('train_logs.csv', self.csv_path)
-
-        # Delete unwanted directories used while training
-        Trainer.cleanup()

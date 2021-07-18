@@ -1,11 +1,11 @@
 # NOTE: while mentioning Google cloud storage paths, mention full path starting from 'gs://'
 train_params:
-  batch_size: 32
+  batch_size: 64
   num_epochs: 50
-  steps_per_epoch:  119
+  steps_per_epoch: 163
   data_dir: 'gs://vernal-buffer-285906/train_data/'
   output_dir: 'gs://vernal-buffer-285906/train_results'
-  image_shape: (650, 650, 3)
+  image_shape: (227, 227, 3)
   use_multiprocessing: True
   # number of workers to use if multiprocessing is enabled
   workers: 6
@@ -46,5 +46,5 @@ model_params:
   metrics: ["accuracy"]
 
 predict_params:
-  model_path: 'gs://vernal-buffer-285906/Breast_cancer_detector.hdf5'
-  data_path: 'gs://vernal-buffer-285906/vernal-buffer-285906/test_images/normal'
+  model_path: 'gs://vernal-buffer-285906/train_results/trained_model/Breast_cancer_detector.hdf5'
+  data_path: 'gs://vernal-buffer-285906/test_images/benign'

@@ -48,8 +48,7 @@ class CNNModel(Model):
             layers.MaxPooling2D(pool_size=(2, 2)),
             layers.Flatten(),
             layers.Dropout(0.5),  # Dropout for regularization
-            layers.Dense(124, activation='relu'),
-            layers.Dense(124, activation='relu'),
+            layers.Dense(128, activation='relu'),
             layers.Dense(1, activation='sigmoid')
         ])
 

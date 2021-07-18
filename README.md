@@ -1,18 +1,20 @@
-# Breast-Cancer-Detection
+# Cancer-Detection Using GCP
 
-- Aim of this project is to classify mammography images into benign and cancerous.
-- The dataset used in this project is DDSM dataset. 
-  which contains 1127 mammography images which are benign and 1273 mammography images which are cancerous.
-- Augmentation was used to increase number of images inh training dataset.
-- Google Cloud's AI Platform is used to train large models which can't be trained using personal
-  laptops due to computation requirements.
-- Repository supports both local training and also using GCP Ai Platform.
+## Overview
+- The goal of this project is to provide a platform to build and train machine learning models for medical image 
+  classification using Google Cloud's AI platform.
+- In this project I have used mammography(breast cancer) images, but I am pretty sure any type of
+  medical image datasets can be used by tweaking the model parameters [here](detectors/tf_gcp/trainer/models/models.py).
 
+## Dataset
+1. The dataset was obtained from mendeley website [here](https://data.mendeley.com/datasets/ywsbh3ndr8/5).
+2. The dataset in the link above contains DDSM, INBREAST and a directory containing DDSM+INBREAST+MIAS
+   combined datasets. Only DDSM dataset was used.
+   
 
-## Creating Train dataset
-
-1. Image augmentation can be done if required. augmentation procedure is available in 
-   tools/preprocessers/image_augmenter.ipynb
+## Preparing Train dataset
+1. No augmentation was done since the dataset was already augmented. If it's required, augmentation procedure is available 
+   [here](tools/preprocessers/image_augmenter.ipynb)
 2. Open notebook train_data_creator.ipynb located at tools/preprocessers and run it.
 3. Input data folder should contain one folder per class containing images.
 4. Give an empty directory as the destination path and run the notebook.
@@ -30,7 +32,7 @@ pip install -r requirements.txt
 ```
 2. Open config file at config/config.yaml and update it accordingly.
 3. Go to project root and run following. It sets environment variable 
-   PYTHONPATH to project root so that modules can be imported easily.
+   PYTHONPATH to project root so that modules can be imported easily. (remove the backslashes)
    
 ```shell
 export PYTHONPATH=$(pwd):${PYTHONPATH}
@@ -82,13 +84,21 @@ http://<external_ip_address>:6006/
 ## Predicting
 1. Open config file at config/config.yaml and update model path, and data path at the very bottom.
 2. Go to project root and run following. It sets environment variable PYTHONPATH to project root so that 
-   modules can be imported easily.
+   modules can be imported easily. (remove the backslashes)
 ```shell
 export PYTHONPATH=$(pwd):${PYTHONPATH}
 ```
 4. Run predictor
 ```shell
-python3 -m detector.datector --predict --config='./config/config.yaml'
+python3 -m detectors.detector --predict --config='./config/config.yaml'
 ```
 5. Classification results will be printed on the screen. If data path is a directory, 
    all images inside the directories, sub-directories will be read and will be run against model.
+   
+## Results
+
+- DDSM dataset images were visually not distinguishable.
+- I was able to get the training accuracy of 99% within 3 epochs for both CNN and VGG19 models 
+  owing to large number of images in the dataset.
+- Testing accuracy was 100% for both CNN and VGG19. They classified all test images accurately as 
+  benign and cancerous.
