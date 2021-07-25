@@ -8,7 +8,7 @@
 ## Dataset
 - The dataset was obtained from mendeley website [here](https://data.mendeley.com/datasets/ywsbh3ndr8/5).
 - The dataset in the link above contains DDSM, INBREAST and a directory containing DDSM+INBREAST+MIAS
-   combined datasets. Only DDSM dataset was used.
+   combined datasets. Only DDSM dataset was used in this project.
    
 
 ## Preparing Train dataset
