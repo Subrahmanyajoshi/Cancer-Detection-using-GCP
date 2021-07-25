@@ -31,7 +31,7 @@ pip install -r requirements.txt
 ```
 - Open config file at config/config.yaml and update it accordingly.
 - Go to project root and run following. It sets environment variable 
-   PYTHONPATH to project root so that modules can be imported easily. (remove the backslashes)
+   PYTHONPATH to project root so that modules can be imported easily.
    
 ```shell
 export PYTHONPATH=$(pwd):${PYTHONPATH}
@@ -83,7 +83,7 @@ http://<external_ip_address>:6006/
 ## Predicting
 - Open config file at config/config.yaml and update model path, and data path at the very bottom.
 - Go to project root and run following. It sets environment variable PYTHONPATH to project root so that 
-   modules can be imported easily. (remove the backslashes)
+   modules can be imported easily.
 ```shell
 export PYTHONPATH=$(pwd):${PYTHONPATH}
 ```
