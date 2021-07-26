@@ -1,7 +1,9 @@
 import argparse
 import os
-from argparse import Namespace
 
+import tensorflow as tf
+
+from argparse import Namespace
 from cv2 import imread, resize
 
 from detectors.common import YamlConfig, SystemOps
@@ -23,19 +25,7 @@ class Predictor(object):
         self.img_channels = self.img_shape[2]
 
     def load_model(self):
-        if self.model_params.model == 'CNN':
-            model = CNNModel(img_shape=(None,) + self.img_shape).build(self.model_params)
-        elif self.model_params.model == 'VGG19':
-            model = VGG19Model(self.img_shape).build(self.model_params)
-        else:
-            raise NotImplementedError(f"{self.model_params.model} model is currently not supported. "
-                                      f"Please choose between CNN and VGG19")
-
-        if self.model_path.startswith('gs://'):
-            SystemOps.run_command(f"gsutil -m cp -r {self.model_path} ./")
-            self.model_path = os.path.basename(self.model_path)
-
-        model.load_weights(self.model_path)
+        model = tf.saved_model.load(self.model_path)
         return model
 
     def predict(self, img_path: str):

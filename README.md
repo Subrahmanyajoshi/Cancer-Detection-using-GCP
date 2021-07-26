@@ -14,7 +14,7 @@
 ## Preparing Train dataset
 - No augmentation was done since the dataset was already augmented. If it's required, augmentation procedure is available 
    [here](tools/preprocessers/image_augmenter.ipynb)
-- Open notebook train_data_creator.ipynb located at tools/preprocessers and run it.
+- Open notebook train_data_creator.ipynb located at tools/preprocessors and run it.
 - Input data folder should contain one folder per class containing images.
 - Give an empty directory as the destination path and run the notebook.
 - Once notebook is run completely, following folders/files will be created in destination directory.
@@ -38,7 +38,7 @@ export PYTHONPATH=$(pwd):${PYTHONPATH}
 ```
 - Run trainer
 ```shell
-python3 -m detector.datector --train --train_type='local' --config='./config/config.yaml'
+python3 -m detectors.detector --train --config='./config/config.yaml'
 ```
 
 
@@ -68,7 +68,6 @@ git clone https://github.com/Subrahmanyajoshi/Breast-Cancer-Detection.git
 - Tensorboard will be running on port 6006 by default.
 - A firewall rule must be set up to open this port, follow the procedure given
    [here](https://docs.bitnami.com/google/faq/administration/use-firewall/).
-   
 - Once done, open a terminal and run following. Provide the path to tensorboard directory, 
    specified in config file.
 ```shell
