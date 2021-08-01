@@ -3,7 +3,7 @@ import os
 import zipfile
 from argparse import Namespace
 
-from detectors.common import BucketOps, SystemOps, YamlConfig
+from detectors.common import BucketOps, SystemOps
 from detectors.tf_gcp.trainer.data_ops.data_generator import DataGenerator
 from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO, LocalIO
 from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
@@ -108,9 +108,6 @@ class Trainer(object):
         SystemOps.create_dir('./trained_model')
         model_path = os.path.join('./trained_model', f"{self.model_params.model}_{Trainer.MODEL_NAME}")
         Model.save_weights(model_path)
-        model_yaml = Model.to_yaml()
-        with open("./trained_model/model.yaml", "w") as yaml_file:
-            yaml_file.write(model_yaml)
 
         # send saved model to 'trained_model' directory
         io_operator.write('./trained_model', self.train_params.output_dir)

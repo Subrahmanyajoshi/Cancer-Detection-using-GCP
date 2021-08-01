@@ -49,6 +49,11 @@ python3 -m detectors.detector --train --config='./config/config.yaml'
    (Create the notebook with low specifications, as we will not be running actual training here. 
    This just acts as a base machine to submit the job to AI platform. 
    The best choice is n1-standard-2 machines which have 7.5 gb memory and 2 vCpus).
+  
+- Install opencv-python-headless package
+```shell
+pip3 install opencv-python-headless==4.5.3.56
+```
 - Open a terminal and clone this repository.
 ```shell
 git clone https://github.com/Subrahmanyajoshi/Breast-Cancer-Detection.git
@@ -81,6 +86,10 @@ http://<external_ip_address>:6006/
 
 ## Predicting
 - Open config file at config/config.yaml and update model path, and data path at the very bottom.
+- Install opencv-python-headless package
+```shell
+pip3 install opencv-python-headless==4.5.3.56
+```
 - Go to project root and run following. It sets environment variable PYTHONPATH to project root so that 
    modules can be imported easily.
 ```shell

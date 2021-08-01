@@ -46,5 +46,5 @@ model_params:
   metrics: ["accuracy"]
 
 predict_params:
-  model_path: 'gs://vernal-buffer-285906/train_results/trained_model/Breast_cancer_detector.hdf5'
+  model_path: 'gs://vernal-buffer-285906/train_results/trained_model/CNN_Breast_cancer_detector.hdf5'
   data_path: 'gs://vernal-buffer-285906/test_images/benign'
