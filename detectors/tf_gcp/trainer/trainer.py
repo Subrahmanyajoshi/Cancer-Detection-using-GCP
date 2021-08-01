@@ -107,12 +107,13 @@ class Trainer(object):
         )
 
         # save model as hdf5 file
-        SystemOps.create_dir(os.path.join('./trained_model', datetime.now().strftime("%Y_%m_%d-%H:%M:%S")))
+        SystemOps.create_dir('trained_model')
+        SystemOps.create_dir(os.path.join('trained_model', datetime.now().strftime("%Y_%m_%d-%H:%M:%S")))
         model_path = os.path.join('./trained_model', datetime.now().strftime("%Y_%m_%d-%H:%M:%S"),
                                   f"{self.model_params.model}_{Trainer.MODEL_NAME}")
         Model.save_weights(model_path)
 
         # send saved model to 'trained_model' directory
-        io_operator.write('./trained_model', self.train_params.output_dir)
+        io_operator.write('trained_model', self.train_params.output_dir)
         io_operator.write('./checkpoints/*', self.cp_path)
         io_operator.write('train_logs.csv', self.csv_path)
