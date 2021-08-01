@@ -1,6 +1,8 @@
 import importlib
 import os
 import zipfile
+
+from datetime import datetime
 from argparse import Namespace
 
 from detectors.common import BucketOps, SystemOps
@@ -105,8 +107,9 @@ class Trainer(object):
         )
 
         # save model as hdf5 file
-        SystemOps.create_dir('./trained_model')
-        model_path = os.path.join('./trained_model', f"{self.model_params.model}_{Trainer.MODEL_NAME}")
+        SystemOps.create_dir(os.path.join('./trained_model', datetime.now().strftime("%Y_%m_%d-%H:%M:%S")))
+        model_path = os.path.join('./trained_model', datetime.now().strftime("%Y_%m_%d-%H:%M:%S"),
+                                  f"{self.model_params.model}_{Trainer.MODEL_NAME}")
         Model.save_weights(model_path)
 
         # send saved model to 'trained_model' directory
