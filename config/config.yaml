@@ -18,11 +18,12 @@ train_params:
 
     # Model checkpoint callback.
     ModelCheckpoint:
-      filepath: 'gs://vernal-buffer-285906/train_results/checkpoints/model-{epoch:02d}-{val_loss:.2f}/'
+      filepath: 'gs://vernal-buffer-285906/train_results/checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5'
       monitor: 'val_accuracy'
       save_freq: 'epoch'
       verbose: 1
-      period: 1
+      period: 3
+      save_best_only: False
 
     # Early stopping callback.
     EarlyStopping:
@@ -31,7 +32,7 @@ train_params:
       verbose: 1
       patience: 10
 
-    # Csv logger callback. 
+    # Csv logger callback.
     CSVLogger:
       filename: 'gs://vernal-buffer-285906/train_results/train_logs.csv'
       separator: ','
