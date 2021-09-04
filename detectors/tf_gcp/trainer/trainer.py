@@ -12,7 +12,7 @@ from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
 
 
 class Trainer(object):
-    MODEL_NAME = 'Breast_cancer_detector.hdf5'
+    MODEL_NAME = 'Cancer_Detector.hdf5'
 
     def __init__(self, config: dict):
         """ Init method
