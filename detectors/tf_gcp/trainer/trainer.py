@@ -52,9 +52,9 @@ class Trainer(object):
             callbacks.append(obj(**self.train_params.callbacks[cb]))
         return callbacks
 
-    def clean_up(self):
+    @staticmethod
+    def clean_up():
         """ Deletes temporary directories created while training"""
-
         print(f"[Trainer::cleanup] Cleaning up...")
         SystemOps.check_and_delete('all_images')
         SystemOps.check_and_delete('checkpoints')
