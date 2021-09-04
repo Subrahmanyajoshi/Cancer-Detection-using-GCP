@@ -54,6 +54,8 @@ class Trainer(object):
 
     def clean_up(self):
         """ Deletes temporary directories created while training"""
+
+        print(f"[Trainer::cleanup] Cleaning up...")
         SystemOps.check_and_delete('all_images')
         SystemOps.check_and_delete('checkpoints')
         SystemOps.check_and_delete('trained_model')
@@ -69,6 +71,7 @@ class Trainer(object):
             raise NotImplementedError(f"{self.model_params.model} model is currently not supported. "
                                       f"Please choose between CNN and VGG19")
         Model.summary()
+        print(f"[Trainer::train] Built {self.model_params.model} model")
 
         if self.bucket is not None:
             io_operator = CloudIO(input_dir=self.train_params.data_dir, bucket=self.bucket)
@@ -83,6 +86,9 @@ class Trainer(object):
         SystemOps.create_dir('checkpoints')
 
         X_train_files, y_train, X_val_files, y_val = io_operator.load()
+        print(f"[Trainer::train] Loaded train and validation files, along with labels")
+
+        print("[Trainer::train] Creating train and validation generators...")
         train_generator = DataGenerator(image_filenames=X_train_files,
                                         labels=y_train,
                                         batch_size=self.train_params.batch_size,
@@ -96,6 +102,7 @@ class Trainer(object):
                                              bucket=self.bucket,
                                              image_shape=eval(self.train_params.image_shape))
 
+        print("[Trainer::train] Started training...")
         history = Model.fit(
             train_generator,
             validation_data=validation_generator,
