@@ -18,7 +18,9 @@ train_params:
 
     # Model checkpoint callback.
     ModelCheckpoint:
-      filepath: 'gs://vernal-buffer-285906/train_results/checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5'
+      # Only mention the model name here, a folder called 'checkpoints' containing checkpoints will be created in 'output_dir' specified above in
+      # 'train_params'
+      filepath: 'model.{epoch:02d}-{val_loss:.2f}.hdf5'
       monitor: 'val_accuracy'
       save_freq: 'epoch'
       verbose: 1
@@ -34,7 +36,8 @@ train_params:
 
     # Csv logger callback.
     CSVLogger:
-      filename: 'gs://vernal-buffer-285906/train_results/train_logs.csv'
+      # Only mention csv file name here, This csb file will be dumped to  'output_dir' specified above in 'train_params'
+      filename: 'train_logs.csv'
       separator: ','
       append: False
 
