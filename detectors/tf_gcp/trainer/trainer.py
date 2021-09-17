@@ -6,6 +6,7 @@ from datetime import datetime
 from argparse import Namespace
 
 from detectors.common import BucketOps, SystemOps
+from detectors.tf_gcp.trainer.callbacks import CallBacksCreator
 from detectors.tf_gcp.trainer.data_ops.data_generator import DataGenerator
 from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO, LocalIO
 from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
