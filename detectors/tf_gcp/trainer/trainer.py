@@ -24,7 +24,6 @@ class Trainer(object):
         self.model_params = Namespace(**config.get('model_params'))
         self.cp_path = None
         self.csv_path = None
-        self.callbacks = self.init_callbacks()
         self.bucket = None
         bucket_name = 'unk'
         if self.train_params.data_dir.startswith('gs://'):
@@ -33,24 +32,6 @@ class Trainer(object):
             bucket_name = self.train_params.data_dir.split('gs://')[1].split('/')[0]
         if bucket_name != 'unk':
             self.bucket = BucketOps.get_bucket(bucket_name)
-
-    def init_callbacks(self):
-        """ Creates callback objects mentioned in configurations """
-        callbacks = []
-        module = importlib.import_module('tensorflow.keras.callbacks')
-        for cb in self.train_params.callbacks:
-            if cb == 'ModelCheckpoint':
-                self.cp_path, filename = os.path.split(self.train_params.callbacks[cb]['filepath'])
-                self.train_params.callbacks[cb]['filepath'] = os.path.join('./checkpoints',
-                                                                           f"{self.model_params.model}_{filename}")
-
-            if cb == 'CSVLogger':
-                self.csv_path, filename = os.path.split(self.train_params.callbacks[cb]['filename'])
-                self.train_params.callbacks[cb]['filename'] = filename
-
-            obj = getattr(module, cb)
-            callbacks.append(obj(**self.train_params.callbacks[cb]))
-        return callbacks
 
     @staticmethod
     def clean_up():
@@ -82,6 +63,10 @@ class Trainer(object):
         else:
             io_operator = LocalIO(input_dir=self.train_params.data_dir)
 
+        callbacks = CallBacksCreator.get_callbacks(callbacks_config=self.train_params.callbacks,
+                                                   model_type=self.model_params.model,
+                                                   io_operator=io_operator)
+
         SystemOps.check_and_delete('checkpoints')
         SystemOps.create_dir('checkpoints')
 
@@ -107,7 +92,7 @@ class Trainer(object):
             train_generator,
             validation_data=validation_generator,
             epochs=self.train_params.num_epochs,
-            callbacks=self.callbacks,
+            callbacks=callbacks,
             steps_per_epoch=self.train_params.steps_per_epoch,
             workers=self.train_params.workers,
             use_multiprocessing=self.train_params.use_multiprocessing
