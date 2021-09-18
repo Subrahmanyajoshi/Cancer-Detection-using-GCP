@@ -1,6 +1,7 @@
 import argparse
 import os
 from argparse import Namespace
+from typing import Dict
 
 from cv2 import imread, resize
 
@@ -11,7 +12,11 @@ from detectors.tf_gcp.trainer.task import Trainer
 
 class Predictor(object):
 
-    def __init__(self, config: dict):
+    def __init__(self, config: Dict):
+        """ Init method
+        Args:
+            config (Dict): a dictionary containing configuration parameters
+        """
         self.config = config.get('predict_params', {})
         self.data_path = self.config.get('data_path', '')
         self.img_shape = eval(config.get('train_params').get('image_shape'))
@@ -23,6 +28,7 @@ class Predictor(object):
         self.img_channels = self.img_shape[2]
 
     def load_model(self):
+        """ Loads model"""
         if self.model_params.model == 'CNN':
             model = CNNModel(img_shape=(None,) + self.img_shape).build(self.model_params)
         elif self.model_params.model == 'VGG19':
@@ -39,6 +45,10 @@ class Predictor(object):
         return model
 
     def predict(self, img_path: str):
+        """ Runs input image against trained model and prints predictions
+        Args:
+            img_path (str): path of image
+        """
         image = imread(img_path)
         image = resize(image, (self.img_width, self.img_height)) / 255
         image = image[None, :, :, :]
@@ -67,6 +77,7 @@ class Predictor(object):
                 self.predict(abs_path)
 
     def clean_up(self):
+        """ removes temporarily created/copied files or directories"""
         SystemOps.check_and_delete(self.data_path)
         SystemOps.check_and_delete(self.model_path)
 
@@ -87,12 +98,14 @@ def main():
 
     config = YamlConfig.load(filepath=args.config)
 
+    # Run Trainer
     if args.train:
         print('Initialising training')
         trainer = Trainer(config=config)
         trainer.train()
         Trainer.clean_up()
 
+    # Run Predictor
     if args.predict:
         print('Initialising testing')
         predictor = Predictor(config=config)

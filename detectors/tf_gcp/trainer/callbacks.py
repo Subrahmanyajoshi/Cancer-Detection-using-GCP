@@ -8,8 +8,17 @@ from detectors.tf_gcp.trainer.data_ops.io_ops import LocalIO, CloudIO
 
 
 class GCSCallback(Callback):
+    """ A custom callback created to copy checkpoints created by ModelCheckpoint callback to GCS bucket.
+        ModelCheckpoint writes to a local directory called 'checkpoints' and this custom callback will check
+        this directory at the end of every epoch and if any checkpoints are found, they are copied to GCS bucket """
 
     def __init__(self, cp_path: str, io_operator: Union[LocalIO, CloudIO]):
+        """ init class
+        Args:
+            cp_path (str): GCS/Local path to checkpoints directory
+            io_operator (Union[LocalIO, CloudIO]): an operator which contains functions to copy or move from
+                                                   one path to other
+        """
         super(GCSCallback, self).__init__()
         self.checkpoint_path = cp_path
         self.io_operator = io_operator
@@ -21,9 +30,19 @@ class GCSCallback(Callback):
 
 
 class CallBacksCreator(object):
+    """ Creates callbacks based on callback configurations specified in config yaml file"""
 
     @staticmethod
     def get_callbacks(callbacks_config: Dict, model_type: str, io_operator: Union[LocalIO, CloudIO]):
+        """ creates callbacks
+        Args:
+            callbacks_config (Dict): a dictionary containing callback configurations.
+            model_type (str): specifies which type of model is being used.
+            io_operator (Union[LocalIO, CloudIO]): an operator which contains functions to copy or move from
+                                                   one path to other
+        Returns:
+            A list containing created callback objects
+        """
         callbacks = []
         module = importlib.import_module('tensorflow.keras.callbacks')
         cp_path = None

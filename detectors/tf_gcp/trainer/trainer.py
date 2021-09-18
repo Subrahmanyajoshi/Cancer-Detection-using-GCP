@@ -1,9 +1,7 @@
-import importlib
 import os
 import zipfile
-
-from datetime import datetime
 from argparse import Namespace
+from datetime import datetime
 
 from detectors.common import BucketOps, SystemOps
 from detectors.tf_gcp.trainer.callbacks import CallBacksCreator
@@ -64,6 +62,7 @@ class Trainer(object):
         else:
             io_operator = LocalIO(input_dir=self.train_params.data_dir)
 
+        # create callbacks based on configurations from config yaml
         callbacks = CallBacksCreator.get_callbacks(callbacks_config=self.train_params.callbacks,
                                                    model_type=self.model_params.model,
                                                    io_operator=io_operator)
@@ -74,6 +73,10 @@ class Trainer(object):
         X_train_files, y_train, X_val_files, y_val = io_operator.load()
         print(f"[Trainer::train] Loaded train and validation files, along with labels")
 
+        # Creating custom generators which read images and feed it to network. Can't use already available
+        # methods in tensorflow to load data since they read all images into memory at once leading to out of memory
+        # error. This custom generator reads only a batch of data into memory at once. This is a lot slower but
+        # doesn't cause out of memory error.
         print("[Trainer::train] Creating train and validation generators...")
         train_generator = DataGenerator(image_filenames=X_train_files,
                                         labels=y_train,
