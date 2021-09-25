@@ -23,7 +23,7 @@
     - val: contains 2 npy files. one containing validation image names and one containing labels.
 - The entire destination folder needs to be uploaded to Google Storage before training is started.
 
-## Steps to train locally
+## Training models locally
 
 - Install packages from requirements.txt
 ```shell
@@ -42,26 +42,22 @@ python3 -m detectors.detector --train --config='./config/config.yaml'
 ```
 
 
-## Steps to submit training job to AI Platform
+## Submitting Training job to AI Platform
 
-- Go to google cloud console and create and open an instance of AI Notebooks. 
+- Go to google cloud console and create an instance of AI Notebooks. 
    If not known how to do that, follow the procedure given [here](https://cloud.google.com/notebooks/docs/create-new).
    (Create the notebook with low specifications, as we will not be running actual training here. 
    This just acts as a base machine to submit the job to AI platform. 
    The best choice is n1-standard-2 machines which have 7.5 gb memory and 2 vCpus).
-  
-- Install opencv-python-headless package
-```shell
-pip3 install opencv-python-headless==4.5.3.56
-```
-- Open a terminal and clone this repository.
+- Launch Jupyter lab and open a terminal.
+- Clone this repository.
 ```shell
 git clone https://github.com/Subrahmanyajoshi/Breast-Cancer-Detection.git
 ```
 - Create a google storage bucket. If not known how to do that, 
    follow the procedure given [here](https://cloud.google.com/storage/docs/creating-buckets)
 - Upload the training dataset folder which contains all images zip file along with 'train' and 'val' 
-   folders containing npy files.
+   folders containing npy files into newly created bucket.
 - open config file at config/config.yaml and update it accordingly. Make sure to mention full paths
    starting from 'gs://' while specifying paths inside the bucket.
 - Open the notebook detectors/tf_gcp/ai_platform_trainer.ipynb and run the notebook 
