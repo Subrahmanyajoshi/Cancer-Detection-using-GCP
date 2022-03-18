@@ -3,11 +3,11 @@ import zipfile
 from argparse import Namespace
 from datetime import datetime
 
-from detectors.common import BucketOps, SystemOps
-from detectors.tf_gcp.trainer.callbacks import CallBacksCreator
-from detectors.tf_gcp.trainer.data_ops.data_generator import DataGenerator
-from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO, LocalIO
-from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
+from detectors.tf_gcp.common import BucketOps, SystemOps
+from detectors.tf_gcp.callbacks import CallBacksCreator
+from detectors.tf_gcp.data_ops.data_generator import DataGenerator
+from detectors.tf_gcp.data_ops.io_ops import CloudIO, LocalIO
+from detectors.tf_gcp.models.models import CNNModel, VGG19Model
 
 
 class Trainer(object):

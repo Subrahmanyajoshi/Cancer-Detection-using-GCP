@@ -8,7 +8,7 @@ from io import BytesIO
 from google.cloud.storage import Bucket
 from tensorflow.python.lib.io import file_io
 
-from detectors.common import SystemOps
+from detectors.tf_gcp.common import SystemOps
 
 
 class IO(abc.ABC):

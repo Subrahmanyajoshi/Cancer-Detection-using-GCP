@@ -4,7 +4,7 @@ import os
 from typing import Dict, Union
 from tensorflow.keras.callbacks import Callback
 
-from detectors.tf_gcp.trainer.data_ops.io_ops import LocalIO, CloudIO
+from detectors.tf_gcp.data_ops.io_ops import LocalIO, CloudIO
 
 
 class GCSCallback(Callback):

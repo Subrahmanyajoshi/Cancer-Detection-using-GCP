@@ -1,9 +1,9 @@
 import argparse
 import os
 
-from detectors.common import YamlConfig
-from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO
-from detectors.tf_gcp.trainer.trainer import Trainer
+from detectors.tf_gcp.common import YamlConfig
+from detectors.tf_gcp.data_ops.io_ops import CloudIO
+from detectors.tf_gcp.trainer import Trainer
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     args = parser.parse_args()
 
     # Copy config file containing train configurations
-    CloudIO.copy_from_gcs(args.train_config, './')
+    CloudIO.copy_from_gcs(args.train_config, 'tf_gcp/trainer/')
     config = YamlConfig.load(filepath=os.path.abspath('config.yaml'))
 
     # Create and run trainer

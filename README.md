@@ -3,7 +3,7 @@
 - The goal of this project is to provide a platform to build and train machine learning models for medical image 
   classification using Google Cloud's AI platform.
 - In this project I have used mammography(breast cancer) images, but I am pretty sure any type of
-  medical image datasets can be used by tweaking the model parameters [here](detectors/tf_gcp/trainer/models/models.py).
+  medical image datasets can be used by tweaking the model parameters [here](detectors/tf_gcp/models/models.py).
 
 ## Dataset
 - The dataset was obtained from mendeley website [here](https://data.mendeley.com/datasets/ywsbh3ndr8/5).
@@ -27,7 +27,7 @@
 
 - Install packages from requirements.txt
 ```shell
-pip install -r requirements.txt
+pip install -r requirements_baremetal.txt
 ```
 - Open config file at config/config.yaml and update it accordingly.
 - Go to project root and run following. It sets environment variable 

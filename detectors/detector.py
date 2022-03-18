@@ -5,9 +5,9 @@ from typing import Dict
 
 from cv2 import imread, resize
 
-from detectors.common import YamlConfig, SystemOps
-from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
-from detectors.tf_gcp.trainer.task import Trainer
+from detectors.tf_gcp.common import YamlConfig, SystemOps
+from detectors.tf_gcp.models.models import CNNModel, VGG19Model
+from detectors.vertex_ai_job import Trainer
 
 
 class Predictor(object):
