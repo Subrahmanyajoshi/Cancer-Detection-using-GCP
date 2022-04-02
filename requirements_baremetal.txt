@@ -1,5 +1,5 @@
-numpy==1.19.2
-tensorflow==2.6.2
+numpy~=1.21.0
+tensorflow==2.8.0
 protobuf==3.17.3
 pydicom==2.1.2
 PyYAML==5.4.1

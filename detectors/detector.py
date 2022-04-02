@@ -5,9 +5,9 @@ from typing import Dict
 
 from cv2 import imread, resize
 
-from detectors.common import YamlConfig, SystemOps
-from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
-from detectors.tf_gcp.trainer.task import Trainer
+from detectors.tf_gcp.common import YamlConfig, SystemOps
+from detectors.tf_gcp.models.models import CNNModel, VGG19Model
+from detectors.vertex_ai_job import Trainer
 
 
 class Predictor(object):
@@ -28,7 +28,8 @@ class Predictor(object):
         self.img_channels = self.img_shape[2]
 
     def load_model(self):
-        """ Loads model"""
+        """ Loads the model saved during training
+        """
         if self.model_params.model == 'CNN':
             model = CNNModel(img_shape=(None,) + self.img_shape).build(self.model_params)
         elif self.model_params.model == 'VGG19':
@@ -62,6 +63,8 @@ class Predictor(object):
                   f'Confidence: {round(((1 - result)* 100), 2)}%')
 
     def run(self):
+        """ Loads test images and trained model, and creates predictions
+        """
         if self.data_path.startswith('gs://'):
             SystemOps.run_command(f"gsutil -m cp -r {self.data_path} ./")
             self.data_path = os.path.basename(self.data_path)

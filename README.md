@@ -1,9 +1,9 @@
 
 ## Overview
 - The goal of this project is to provide a platform to build and train machine learning models for medical image 
-  classification using Google Cloud's AI platform.
+  classification using Google Cloud's Vertex AI.
 - In this project I have used mammography(breast cancer) images, but I am pretty sure any type of
-  medical image datasets can be used by tweaking the model parameters [here](detectors/tf_gcp/trainer/models/models.py).
+  medical image datasets can be used by tweaking the model parameters [here](detectors/tf_gcp/models/models.py).
 
 ## Dataset
 - The dataset was obtained from mendeley website [here](https://data.mendeley.com/datasets/ywsbh3ndr8/5).
@@ -27,7 +27,7 @@
 
 - Install packages from requirements.txt
 ```shell
-pip install -r requirements.txt
+pip install -r requirements_baremetal.txt
 ```
 - Open config file at config/config.yaml and update it accordingly.
 - Go to project root and run following. It sets environment variable 
@@ -42,12 +42,12 @@ python3 -m detectors.detector --train --config='./config/config.yaml'
 ```
 
 
-## Submitting Training job to AI Platform
+## Submitting Training job to Vertex AI
 
 - Go to google cloud console and create an instance of AI Notebooks. 
    If not known how to do that, follow the procedure given [here](https://cloud.google.com/notebooks/docs/create-new).
    (Create the notebook with low specifications, as we will not be running actual training here. 
-   This just acts as a base machine to submit the job to AI platform. 
+   This just acts as a base machine to submit the job to Vertex AI. 
    The best choice is n1-standard-2 machines which have 7.5 gb memory and 2 vCpus).
 - Launch Jupyter lab and open a terminal.
 - Clone this repository.
@@ -60,9 +60,13 @@ git clone https://github.com/Subrahmanyajoshi/Breast-Cancer-Detection.git
    folders containing npy files into newly created bucket.
 - open config file at config/config.yaml and update it accordingly. Make sure to mention full paths
    starting from 'gs://' while specifying paths inside the bucket.
-- Open the notebook detectors/tf_gcp/ai_platform_trainer.ipynb and run the notebook 
-   following the steps given there.
-- The notebook will submit the training job to AI Platform. 
+- Open the [detectors/vertex_ai_job_submitter](detectors/vertex_ai_job_submitter.sh) shell script.
+- Change the environment variables if required.
+- Run the shell script
+```shell
+./detectors/vertex_ai_job_submitter.sh
+```
+- The shell script will create a custom training job and submit it to Vertex AI. 
 
 ### Activating and using tensorboard to monitor training
 

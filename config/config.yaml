@@ -3,8 +3,8 @@ train_params:
   batch_size: 64
   num_epochs: 10
   steps_per_epoch: 163
-  data_dir: 'gs://vernal-buffer-285906/train_data/'
-  output_dir: 'gs://vernal-buffer-285906/train_results'
+  data_dir: 'gs://cancer-detector-323506/train_data/'
+  output_dir: 'gs://cancer-detector-323506/train_results'
   image_shape: (227, 227, 3)
   use_multiprocessing: True
   # number of workers to use if multiprocessing is enabled
@@ -14,11 +14,11 @@ train_params:
   callbacks:
     # Tensorboard callback.
     TensorBoard:
-      log_dir: 'gs://vernal-buffer-285906/train_results/tensorboard'
+      log_dir: 'gs://cancer-detector-323506/train_results/tensorboard'
 
     # Model checkpoint callback.
     ModelCheckpoint:
-      filepath: 'gs://vernal-buffer-285906/train_results/checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5'
+      filepath: 'gs://cancer-detector-323506/train_results/checkpoints/model.{epoch:02d}-{val_loss:.2f}.hdf5'
       monitor: 'val_accuracy'
       save_freq: 'epoch'
       verbose: 1
@@ -47,5 +47,5 @@ model_params:
   metrics: ["accuracy"]
 
 predict_params:
-  model_path: 'gs://vernal-buffer-285906/train_results/trained_model/2021_08_01-10:07:06/Cancer_Detector.hdf5'
-  data_path: 'gs://vernal-buffer-285906/test_images/malignant'
+  model_path: 'gs://cancer-detector-323506/train_results/trained_model/2021_08_01-10:07:06/Cancer_Detector.hdf5'
+  data_path: 'gs://cancer-detector-323506/test_images/malignant'

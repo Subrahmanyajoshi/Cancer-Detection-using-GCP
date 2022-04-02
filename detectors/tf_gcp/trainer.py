@@ -3,11 +3,11 @@ import zipfile
 from argparse import Namespace
 from datetime import datetime
 
-from detectors.common import BucketOps, SystemOps
-from detectors.tf_gcp.trainer.callbacks import CallBacksCreator
-from detectors.tf_gcp.trainer.data_ops.data_generator import DataGenerator
-from detectors.tf_gcp.trainer.data_ops.io_ops import CloudIO, LocalIO
-from detectors.tf_gcp.trainer.models.models import CNNModel, VGG19Model
+from detectors.tf_gcp.common import BucketOps, SystemOps
+from detectors.tf_gcp.callbacks import CallBacksCreator
+from detectors.tf_gcp.data_ops.data_generator import DataGenerator
+from detectors.tf_gcp.data_ops.io_ops import CloudIO, LocalIO
+from detectors.tf_gcp.models.models import CNNModel, VGG19Model
 
 
 class Trainer(object):
@@ -34,7 +34,8 @@ class Trainer(object):
 
     @staticmethod
     def clean_up():
-        """ Deletes temporary directories created while training"""
+        """ Deletes temporary directories created while training
+        """
         print(f"[Trainer::cleanup] Cleaning up...")
         SystemOps.check_and_delete('all_images')
         SystemOps.check_and_delete('checkpoints')
@@ -43,6 +44,8 @@ class Trainer(object):
         SystemOps.check_and_delete('config.yaml')
 
     def train(self):
+        """ Builds model, trains is and saves it to the specified destination directory
+        """
         if self.model_params.model == 'CNN':
             Model = CNNModel(img_shape=(None,) + eval(self.train_params.image_shape)).build(self.model_params)
         elif self.model_params.model == 'VGG19':
@@ -92,7 +95,7 @@ class Trainer(object):
                                              image_shape=eval(self.train_params.image_shape))
 
         print("[Trainer::train] Started training...")
-        history = Model.fit(
+        _ = Model.fit(
             train_generator,
             validation_data=validation_generator,
             epochs=self.train_params.num_epochs,
