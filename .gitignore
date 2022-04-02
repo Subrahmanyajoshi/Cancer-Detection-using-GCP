@@ -8,6 +8,8 @@ __pycache__
 # Tensorboard directories
 tensorboard
 
+# Data directories
+data
 
 # Editors, OS
 .idea/
