@@ -102,6 +102,10 @@ class YamlConfig(object):
 
     @staticmethod
     def load(filepath: str):
+        """ Loads yaml file in the specified path
+        Args:
+            filepath (str): path of yaml file to be loaded
+        """
         with open(filepath) as filestream:
             config = yaml.safe_load(filestream)
         return config
