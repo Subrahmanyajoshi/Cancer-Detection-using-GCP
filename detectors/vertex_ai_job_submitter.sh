@@ -1,9 +1,9 @@
 # Training tensorflow model using Google Cloud Vertex AI
 
 # Environment Variables
-export PROJECT='cancer-detector-323506'
+export PROJECT='text-analysis-323506'
 export REGION='us-central1'
-export BUCKET='cancer-detector-323506'
+export BUCKET='text-analysis-323506'
 export MACHINE_TYPE='n1-highmem-4'
 export ACCELERATOR_TYPE=NVIDIA_TESLA_K80
 export ACCELERATOR_COUNT=1
