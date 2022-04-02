@@ -17,8 +17,8 @@ def main():
                         required=False)
     args = parser.parse_args()
 
-    # Copy config file containing train configurations from google cloud storage to current directory
-    CloudIO.copy_from_gcs(args.train_config, 'tf_gcp/trainer/')
+    # Copy config file from google cloud storage to current directory and load it.
+    CloudIO.copy_from_gcs(args.train_config, './')
     config = YamlConfig.load(filepath=os.path.abspath('config.yaml'))
 
     # Create and run trainer

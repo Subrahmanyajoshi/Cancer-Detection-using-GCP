@@ -2,7 +2,8 @@ from setuptools import find_packages
 from setuptools import setup
 
 REQUIRED_PACKAGES = [
-    'scikit-learn==0.20.1'
+    'opencv-python-headless==4.5.3.56',
+    'protobuf==3.17.3'
 ]
 
 setup(
